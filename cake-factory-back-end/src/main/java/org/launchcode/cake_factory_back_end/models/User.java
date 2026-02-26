@@ -5,6 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -14,11 +16,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(updatable = false)
@@ -28,10 +32,18 @@ public class User {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
+    // One User has Many Cart items
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cart> cartItems = new ArrayList<>();
+
+    // One User has Many Orders
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
+
     public User() {
     }
 
-    public User (Long id, String email, String name, String password, Timestamp createdAt, Timestamp updatedAt) {
+    public User(Long id, String email, String name, String password, Timestamp createdAt, Timestamp updatedAt) {
         this.id = id;
         this.email = email;
         this.name = name;
@@ -40,8 +52,13 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEmail() {
@@ -83,4 +100,21 @@ public class User {
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public List<Cart> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<Cart> cartItems) {
+        this.cartItems = cartItems;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
+
 }
