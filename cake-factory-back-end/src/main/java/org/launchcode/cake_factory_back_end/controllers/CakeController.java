@@ -3,6 +3,8 @@ package org.launchcode.cake_factory_back_end.controllers;
 import org.launchcode.cake_factory_back_end.models.Cake;
 import org.launchcode.cake_factory_back_end.repositories.CakeRepository;
 import org.springframework.beans.factory.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,25 +16,35 @@ public class CakeController {
     CakeRepository cakeRepository;
     // GET /api/cakes - get all cakes
     @GetMapping("")
-    public List<Cake>getAllCakes() {
-        return cakeRepository.findAll();
+    public ResponseEntity<?> getAllCakes() {
+        List<Cake> allCakes = cakeRepository.findAll();
+        return new ResponseEntity<>(allCakes, HttpStatus.OK);//200
     }
 
     // GET /api/cakes/{id} - get one cake by ID
     @GetMapping("/{id}")
-    public Cake getCakeById(@PathVariable Long id) {
-       return cakeRepository.findById(id).orElse(null);
+    public ResponseEntity<?> getCakeById(@PathVariable Long id) {
+        Cake cake = cakeRepository.findById(id).orElse(null);
+        return new ResponseEntity<>(cake,HttpStatus.OK);//200
     }
 
     // GET /api/cakes/category/{category} - get cakes by category
     @GetMapping("/category/{category}")
-    public List<Cake> getCakesByCategory(@PathVariable Cake.Category category) {
-        return cakeRepository.findByCategory(category);
+    public ResponseEntity<?> getCakesByCategory(@PathVariable Cake.Category category) {
+        List<Cake> cakes = cakeRepository.findByCategory(category);
+        if(cakes.isEmpty()) {
+            return new ResponseEntity<>("No cakes found in this category", HttpStatus.NOT_FOUND);//404
+        }
+        return new ResponseEntity<>(cakes,HttpStatus.OK);//200
     }
 
     // GET /api/cakes/customizable - get all customizable cakes
     @GetMapping("/customizable")
-    public List<Cake> getCustomizableCakes() {
-        return cakeRepository.findByCustomizationTrue();
+    public ResponseEntity<?> getCustomizableCakes() {
+        List<Cake> cakes = cakeRepository.findByCustomizationTrue();
+        if(cakes.isEmpty()) {
+            return new ResponseEntity<>("No customizable cakes found", HttpStatus.NOT_FOUND);//404
+        }
+        return new ResponseEntity<>(cakes, HttpStatus.OK);//200
     }
 }
