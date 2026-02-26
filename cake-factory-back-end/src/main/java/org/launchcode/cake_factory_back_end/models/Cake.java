@@ -4,43 +4,55 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "cakes")
-public class cake {
-    @Id@GeneratedValue(strtegy = GenerationType.IDENTITY)
+public class Cake {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
-    private double price;
+    private Double price;
 
-    private boolean customization;
+    private Boolean customization;
 
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    private String imagePath;
+    private String image_id;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String sizes;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String flavors;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String fillings;
-    private boolean canWriteMessage;
+
+    private Boolean canWriteMessage;
 
     public enum Category {
-        BIRTHDAY, WEDDING, ANNIVERSARY, OTHER
+        BIRTHDAY, WEDDING, ANNIVERSARY, CUPCAKE, OTHER
     }
 
-    public cake() {}
+    public Cake() {}
 
-    public cake(String name, String description, double price, boolean customization, Category category, String imagePath, String sizes, String flavors, String fillings, boolean canWriteMessage) {
+    public Cake(String name, String description, double price, boolean customization, Category category, String imagePath, String sizes, String flavors, String fillings, boolean canWriteMessage) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.customization = customization;
         this.category = category;
-        this.imagePath = imagePath;
+        this.image_id = image_id;
         this.sizes = sizes;
         this.flavors = flavors;
         this.fillings = fillings;
@@ -96,11 +108,11 @@ public class cake {
     }
 
     public String getImagePath() {
-        return imagePath;
+        return image_id;
     }
 
     public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+        this.image_id = imagePath;
     }
 
     public String getSizes() {
@@ -144,7 +156,7 @@ public class cake {
                 ", price=" + price +
                 ", customization=" + customization +
                 ", category=" + category +
-                ", imagePath='" + imagePath + '\'' +
+                ", image_id='" + image_id + '\'' +
                 ", sizes='" + sizes + '\'' +
                 ", flavors='" + flavors + '\'' +
                 ", fillings='" + fillings + '\'' +
@@ -155,7 +167,7 @@ public class cake {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        cake cake = (cake) o;
+        Cake cake = (Cake) o;
         return Objects.equals(id, cake.id);
     }
 
