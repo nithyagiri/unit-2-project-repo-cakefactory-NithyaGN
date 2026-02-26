@@ -8,38 +8,59 @@ public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    private Long cakeId;
-    private Long userId;
+    // Many Cart items belong to One User
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // Many Cart items belong to One Cake
+    @ManyToOne
+    @JoinColumn(name = "cake_id", nullable = false)
+    private Cake cake;
+
+    @Column(name = "quantity", nullable = false)
     private int quantity;
+
+    @Column(name = "selected_size")
     private String selectedSize;
+
+    @Column(name = "selected_flavour")
     private String selectedFlavour;
+
+    @Column(name = "selected_filling")
     private String selectedFilling;
+
+    @Column(name = "message")
     private String message;
 
+    @Column(name = "price", nullable = false)
+    private double price;
     public Cart() {}
 
     public Long getId()
     {
         return id;
     }
-    public Long getCakeId()
-    {
-        return cakeId;
+
+    public User getUser() {
+        return user;
     }
-    public void setCakeId(Long cakeId)
-    {
-        this.cakeId = cakeId;
+
+    public void setUser(User user) {
+        this.user = user;
     }
-    public Long getUserId()
-    {
-        return userId;
+
+    public Cake getCake() {
+        return cake;
     }
-    public void setUserId(Long userId)
-    {
-        this.userId = userId;
+
+    public void setCake(Cake cake) {
+        this.cake = cake;
     }
+
     public int getQuantity()
     {
         return quantity;
@@ -80,4 +101,12 @@ public class Cart {
     {
         this.message = message;
     }
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
 }
