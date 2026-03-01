@@ -25,6 +25,9 @@ public class CakeController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getCakeById(@PathVariable Long id) {
         Cake cake = cakeRepository.findById(id).orElse(null);
+        if (cake == null) {
+            return new ResponseEntity<>("Cake not found", HttpStatus.NOT_FOUND);
+        }
         return new ResponseEntity<>(cake,HttpStatus.OK);//200
     }
 

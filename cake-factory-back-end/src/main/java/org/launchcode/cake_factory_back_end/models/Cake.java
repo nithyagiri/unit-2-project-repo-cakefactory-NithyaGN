@@ -1,5 +1,9 @@
 package org.launchcode.cake_factory_back_end.models;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -9,21 +13,24 @@ public class Cake {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column( name ="name", nullable = false)
     private String name;
 
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column( name ="description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name ="price", nullable = false)
     private Double price;
 
+    @Column(name = "customization")
     private Boolean customization;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "category")
     private Category category;
 
+    @Column(name = "image_id")
     private String image_id;
 
     @Lob
@@ -43,6 +50,13 @@ public class Cake {
     public enum Category {
         BIRTHDAY, WEDDING, ANNIVERSARY, CUPCAKE, OTHER
     }
+    @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Cart> cartItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Order> orders = new ArrayList<>();
 
     public Cake() {}
 
@@ -59,6 +73,8 @@ public class Cake {
         this.canWriteMessage = canWriteMessage;
     }
     // Getters and Setters
+
+
     public Long getId() {
         return id;
     }
@@ -83,19 +99,19 @@ public class Cake {
         this.description = description;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public boolean isCustomization() {
+    public Boolean getCustomization() {
         return customization;
     }
 
-    public void setCustomization(boolean customization) {
+    public void setCustomization(Boolean customization) {
         this.customization = customization;
     }
 
@@ -107,12 +123,12 @@ public class Cake {
         this.category = category;
     }
 
-    public String getImagePath() {
+    public String getImage_id() {
         return image_id;
     }
 
-    public void setImagePath(String imagePath) {
-        this.image_id = imagePath;
+    public void setImage_id(String image_id) {
+        this.image_id = image_id;
     }
 
     public String getSizes() {
@@ -139,12 +155,28 @@ public class Cake {
         this.fillings = fillings;
     }
 
-    public boolean isCanWriteMessage() {
+    public Boolean getCanWriteMessage() {
         return canWriteMessage;
     }
 
-    public void setCanWriteMessage(boolean canWriteMessage) {
+    public void setCanWriteMessage(Boolean canWriteMessage) {
         this.canWriteMessage = canWriteMessage;
+    }
+
+    public List<Cart> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<Cart> cartItems) {
+        this.cartItems = cartItems;
+    }
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
     }
 
     @Override
@@ -170,6 +202,7 @@ public class Cake {
         Cake cake = (Cake) o;
         return Objects.equals(id, cake.id);
     }
+
 
     @Override
     public int hashCode() {
