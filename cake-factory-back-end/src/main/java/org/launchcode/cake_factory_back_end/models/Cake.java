@@ -1,4 +1,5 @@
 package org.launchcode.cake_factory_back_end.models;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -6,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "cake")
+@Table(name = "cakes")
 public class Cake {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,9 +51,11 @@ public class Cake {
         BIRTHDAY, WEDDING, ANNIVERSARY, CUPCAKE, OTHER
     }
     @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Cart> cartItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Order> orders = new ArrayList<>();
 
     public Cake() {}

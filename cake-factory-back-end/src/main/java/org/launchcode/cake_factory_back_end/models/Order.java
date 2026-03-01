@@ -1,5 +1,6 @@
 package org.launchcode.cake_factory_back_end.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -13,11 +14,13 @@ public class Order {
 
     //Many Orders belong to One User
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     //MAny Orders belong to one Cake
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "cake_id", nullable = false)
     private Cake cake;
 
