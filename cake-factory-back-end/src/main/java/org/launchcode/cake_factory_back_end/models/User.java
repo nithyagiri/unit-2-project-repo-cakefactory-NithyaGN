@@ -36,7 +36,7 @@ public class User {
 
     // One User has Many Cart items
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference("user-cart")
     private List<Cart> cartItems = new ArrayList<>();
 
     public User() {

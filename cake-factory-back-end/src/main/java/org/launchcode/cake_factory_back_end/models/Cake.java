@@ -54,7 +54,7 @@ public class Cake {
 
     //one cake can be in many carts
     @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @JsonManagedReference("cake-cart")
     private List<Cart> cartItems = new ArrayList<>();
 
 

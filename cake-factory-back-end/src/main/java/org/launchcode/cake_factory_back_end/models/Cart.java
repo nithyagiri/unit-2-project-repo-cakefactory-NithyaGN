@@ -19,13 +19,13 @@ public class Cart {
     // Many Cart items belong to One User
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("user-cart")
     private User user;
 
     // Many Cart items belong to One Cake
     @ManyToOne
     @JoinColumn(name = "cake_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("cake-cart")
     private Cake cake;
 
     @Column(name = "quantity", nullable = false)

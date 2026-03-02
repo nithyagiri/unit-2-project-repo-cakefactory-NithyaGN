@@ -26,14 +26,14 @@ public class CakeController {
         return ResponseEntity.status(HttpStatus.OK).body(allCakes);//200
     }
 
-    // GET /api/cakes/{id} - get one cake by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCakeById(@PathVariable Long id) {
-        Cake cake = cakeRepository.findById(id).orElse(null);
-        if (cake == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cake not found with ID: " + id);//404
+    // GET /api/cakes/search?name= - search cakes by name
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCakesByName(@RequestParam String name) {
+        List<Cake> cakes = cakeRepository.findByNameContainingIgnoreCase(name);
+        if(cakes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cakes found matching name: " + name);//404
         }
-        return ResponseEntity.status(HttpStatus.OK).body(cake);//200
+        return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
     }
 
     // GET /api/cakes/category/{category} - get cakes by category
@@ -56,13 +56,13 @@ public class CakeController {
         return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
     }
 
-     // GET /api/cakes/search?name= - search cakes by name
-    @GetMapping("/search")
-    public ResponseEntity<?> searchCakesByName(@RequestParam String name) {
-        List<Cake> cakes = cakeRepository.findByNameContainingIgnoreCase(name);
-        if(cakes.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cakes found matching name: " + name);//404
+    // GET /api/cakes/{id} - get one cake by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCakeById(@PathVariable Long id) {
+        Cake cake = cakeRepository.findById(id).orElse(null);
+        if (cake == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cake not found with ID: " + id);//404
         }
-        return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
+        return ResponseEntity.status(HttpStatus.OK).body(cake);//200
     }
 }
