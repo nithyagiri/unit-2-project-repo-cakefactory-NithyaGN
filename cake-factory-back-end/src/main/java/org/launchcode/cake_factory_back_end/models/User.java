@@ -1,6 +1,6 @@
 package org.launchcode.cake_factory_back_end.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "user")
@@ -35,13 +36,8 @@ public class User {
 
     // One User has Many Cart items
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    @JsonManagedReference("user-cart")
     private List<Cart> cartItems = new ArrayList<>();
-
-    // One User has Many Orders
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Order> orders = new ArrayList<>();
 
     public User() {
     }
@@ -53,6 +49,16 @@ public class User {
         this.password = password;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public User(Long id, String email, String name, String password, Timestamp createdAt, Timestamp updatedAt, List<Cart> cartItems) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.cartItems = cartItems;
     }
 
     // Getters and Setters
@@ -112,12 +118,25 @@ public class User {
         this.cartItems = cartItems;
     }
 
-    public List<Order> getOrders() {
-        return orders;
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        User user = (User) obj;
+        return Objects.equals(id, user.id);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

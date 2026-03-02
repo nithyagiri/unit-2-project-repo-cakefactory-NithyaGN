@@ -7,8 +7,10 @@ import java.util.List;
 
 @Repository
 public interface CakeRepository extends JpaRepository<Cake, Long> {
-    //JPA query methods
+    // Find cakes by category
     List<Cake> findByCategory(Cake.Category category);
+    // Find cakes that are customizable
     List<Cake> findByCustomizationTrue();
-    List<Cake> findByCanWriteMessageTrue();
+    // Find cakes by name
+    List<Cake> findByNameContainingIgnoreCase(String name);
 }
