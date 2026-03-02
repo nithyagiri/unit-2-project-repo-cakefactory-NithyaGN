@@ -1,5 +1,6 @@
 package org.launchcode.cake_factory_back_end.controllers;
 
+import org.launchcode.cake_factory_back_end.dto.UserDTO;
 import org.launchcode.cake_factory_back_end.models.User;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,15 @@ public class UserController {
         } catch (Exception e) {
             throw new RuntimeException("Error hashing password");
         }
+    }
+
+    //  Helper method to convert User to UserDTO
+    private UserDTO convertToDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 
     // POST /api/users/register
@@ -72,6 +82,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password is required");
         }
 
+
         // Check if user exists
         Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
         if (user.isEmpty()) {
@@ -83,7 +94,7 @@ public class UserController {
         if (!hashedInput.equals(user.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
         }
-
-        return ResponseEntity.ok("Login successful, Welcome " + user.get().getName());
+        UserDTO userDTO = convertToDTO(user.get());
+        return ResponseEntity.ok(userDTO);
     }
 }

@@ -1,6 +1,7 @@
 package org.launchcode.cake_factory_back_end.controllers;
 
 import jakarta.transaction.Transactional;
+import org.launchcode.cake_factory_back_end.dto.CartDTO;
 import org.launchcode.cake_factory_back_end.models.Cake;
 import org.launchcode.cake_factory_back_end.models.Cart;
 import org.launchcode.cake_factory_back_end.models.User;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -28,6 +30,23 @@ public class CartController {
     @Autowired
     private CakeRepository cakeRepository; // For fetching Cake object
 
+    // Helper method to convert Cart to CartDTO
+    private CartDTO convertToDTO(Cart cart) {
+        return new CartDTO(
+                cart.getId(),
+                cart.getCake().getId(),
+                cart.getCake().getName(),
+                cart.getCake().getImage_id(),
+                cart.getQuantity(),
+                cart.getSelectedSize(),
+                cart.getSelectedFlavour(),
+                cart.getSelectedFilling(),
+                cart.getMessage(),
+                cart.getPrice(),
+                cart.getStatus().toString()
+        );
+    }
+
     // GET all cart items by user
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
@@ -35,6 +54,10 @@ public class CartController {
         if (cartItems.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cart items found for this user");
         }
+        //  Convert each Cart to CartDTO
+        List<CartDTO> cartDTOs = cartItems.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(cartItems);
     }
 
@@ -47,6 +70,10 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("No orders found for this user");
         }
+        List<CartDTO> orderDTOs = orders.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(orders);
     }
 
