@@ -198,6 +198,7 @@ public class Cake {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cake cake = (Cake) o;
         return Objects.equals(id, cake.id);
@@ -205,7 +206,8 @@ public class Cake {
 
 
     @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
+    public int hashCode()
+    {
+        return Objects.hash(id);
     }
 }
