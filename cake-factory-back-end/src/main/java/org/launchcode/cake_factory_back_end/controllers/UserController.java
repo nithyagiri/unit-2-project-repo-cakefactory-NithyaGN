@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.MessageDigest;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -19,7 +18,7 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    // Helper method to hash password
+    // Helper method to hash password with SHA-256
     private String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -55,6 +54,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists with this email");
         }
 
+        // Hash the password before saving
         user.setPassword(hashPassword(user.getPassword()));
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
@@ -62,7 +62,7 @@ public class UserController {
 
     // POST /api/users/login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User loginRequest) {
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
 
         // Check if email or password is empty
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isBlank()) {

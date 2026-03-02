@@ -11,14 +11,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cakes")
+@CrossOrigin(origins = "*")
 public class CakeController {
     @Autowired
-    CakeRepository cakeRepository;
+    private CakeRepository cakeRepository;
+
     // GET /api/cakes - get all cakes
     @GetMapping("")
     public ResponseEntity<?> getAllCakes() {
         List<Cake> allCakes = cakeRepository.findAll();
-        return new ResponseEntity<>(allCakes, HttpStatus.OK);//200
+        if (allCakes.isEmpty()) {
+            return new ResponseEntity<>("No cakes found", HttpStatus.NOT_FOUND);//404
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(allCakes);//200
     }
 
     // GET /api/cakes/{id} - get one cake by ID
@@ -26,9 +31,9 @@ public class CakeController {
     public ResponseEntity<?> getCakeById(@PathVariable Long id) {
         Cake cake = cakeRepository.findById(id).orElse(null);
         if (cake == null) {
-            return new ResponseEntity<>("Cake not found", HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cake not found with ID: " + id);//404
         }
-        return new ResponseEntity<>(cake,HttpStatus.OK);//200
+        return ResponseEntity.status(HttpStatus.OK).body(cake);//200
     }
 
     // GET /api/cakes/category/{category} - get cakes by category
@@ -36,9 +41,9 @@ public class CakeController {
     public ResponseEntity<?> getCakesByCategory(@PathVariable Cake.Category category) {
         List<Cake> cakes = cakeRepository.findByCategory(category);
         if(cakes.isEmpty()) {
-            return new ResponseEntity<>("No cakes found in this category", HttpStatus.NOT_FOUND);//404
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cakes found in category: " + category);//404
         }
-        return new ResponseEntity<>(cakes,HttpStatus.OK);//200
+        return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
     }
 
     // GET /api/cakes/customizable - get all customizable cakes
@@ -46,8 +51,18 @@ public class CakeController {
     public ResponseEntity<?> getCustomizableCakes() {
         List<Cake> cakes = cakeRepository.findByCustomizationTrue();
         if(cakes.isEmpty()) {
-            return new ResponseEntity<>("No customizable cakes found", HttpStatus.NOT_FOUND);//404
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No customizable cakes found");//404
         }
-        return new ResponseEntity<>(cakes, HttpStatus.OK);//200
+        return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
+    }
+
+     // GET /api/cakes/search?name= - search cakes by name
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCakesByName(@RequestParam String name) {
+        List<Cake> cakes = cakeRepository.findByNameContainingIgnoreCase(name);
+        if(cakes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cakes found matching name: " + name);//404
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(cakes);//200
     }
 }

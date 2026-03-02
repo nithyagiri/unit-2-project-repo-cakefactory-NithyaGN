@@ -27,14 +27,27 @@ public class CartController {
     private UserRepository userRepository; // For fetching User object
     @Autowired
     private CakeRepository cakeRepository; // For fetching Cake object
+
     // GET all cart items by user
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
         List<Cart> cartItems = cartRepository.findByUser_Id(userId);
         if (cartItems.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cart items found for this user");
         }
         return ResponseEntity.ok(cartItems);
+    }
+
+    // GET /api/cart/user/{userId}/orders - confirmed orders only
+    @GetMapping("/user/{userId}/orders")
+    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) {
+        List<Cart> orders = cartRepository
+                .findByUser_IdAndStatus(userId, Cart.Status.CONFIRMED);
+        if (orders.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No orders found for this user");
+        }
+        return ResponseEntity.ok(orders);
     }
 
     // POST add item to cart
@@ -60,6 +73,7 @@ public class CartController {
         // set objects instead of IDs
         cart.setUser(user.get());
         cart.setCake(cake.get());
+        cart.setStatus(Cart.Status.IN_CART); // default status when adding to cart
         cartRepository.save(cart);
         return ResponseEntity.status(HttpStatus.CREATED).body("Item added to cart successfully"); }
 
@@ -74,6 +88,9 @@ public class CartController {
         }
 
         Cart cart = existing.get();
+        if (cart.getStatus() != Cart.Status.IN_CART) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only items in cart can be updated");
+        }
         cart.setQuantity(updatedCart.getQuantity());
         cart.setSelectedSize(updatedCart.getSelectedSize());
         cart.setSelectedFlavour(updatedCart.getSelectedFlavour());
@@ -88,7 +105,6 @@ public class CartController {
             }
             cart.setCake(cake.get());
         }
-
         cartRepository.save(cart);
         return ResponseEntity.ok("Cart item updated successfully");
     }
@@ -101,8 +117,45 @@ public class CartController {
         if (existing.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
         }
+        if (existing.get().getStatus() != Cart.Status.IN_CART) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only items in cart can be removed");
+        }
         cartRepository.deleteById(id);
         return ResponseEntity.ok("Item removed from cart");
+    }
+    // DELETE /api/cart/user/{userId} - clear entire cart
+    @Transactional
+    @DeleteMapping("/user/{userId}")
+    public ResponseEntity<String> clearCart(@PathVariable Long userId) {
+        List<Cart> cartItems = cartRepository
+                .findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+        if (cartItems.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No cart items found for this user");
+        }
+        cartRepository.deleteByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+        return ResponseEntity.ok("Cart cleared successfully");
+    }
+    // POST /api/cart/checkout/{userId} - checkout
+    @Transactional
+    @PostMapping("/checkout/{userId}")
+    public ResponseEntity<String> checkout(@PathVariable Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        List<Cart> cartItems = cartRepository
+                .findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+        if (cartItems.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cart is empty");
+        }
+        //  Just update status to CONFIRMED
+        for (Cart cart : cartItems) {
+            cart.setStatus(Cart.Status.CONFIRMED);
+            cartRepository.save(cart);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Order confirmed! Your delicious cake order is on its way.");
     }
 
 }
