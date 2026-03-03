@@ -35,18 +35,18 @@ public class CartController {
 
     private CartDTO convertToDTO(Cart cart) {
         return new CartDTO(
-                cart.getId(),               // 1. Cart Entry ID
-                cart.getUser().getId(),      // 2. User ID
-                cart.getCake().getId(),      // 3. Cake ID
-                cart.getCake().getName(),    // 4. Cake Name
-                cart.getCake().getImage_id(),// 5. Cake Image ID
-                cart.getQuantity(),          // 6. Quantity
-                cart.getSelectedSize(),      // 7. Size
-                cart.getSelectedFlavour(),   // 8. Flavour
-                cart.getSelectedFilling(),   // 9. Filling
-                cart.getMessage(),           // 10. Message
-                cart.getPrice(),             // 11. Price
-                cart.getStatus().toString()  // 12. Status (IN_CART or CONFIRMED)
+                cart.getId(),
+                cart.getUser().getId(),
+                cart.getCake().getId(),
+                cart.getCake().getName(),
+                cart.getCake().getImage_id(),
+                cart.getQuantity(),
+                cart.getSelectedSize(),
+                cart.getSelectedFlavour(),
+                cart.getSelectedFilling(),
+                cart.getMessage(),
+                cart.getPrice(),
+                cart.getStatus().toString()
         );
     }
 
