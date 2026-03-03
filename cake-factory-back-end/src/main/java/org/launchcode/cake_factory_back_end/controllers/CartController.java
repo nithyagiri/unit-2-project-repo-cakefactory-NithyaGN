@@ -9,6 +9,7 @@ import org.launchcode.cake_factory_back_end.models.User;
 import org.launchcode.cake_factory_back_end.repositories.CakeRepository;
 import org.launchcode.cake_factory_back_end.repositories.CartRepository;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
+import org.launchcode.cake_factory_back_end.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -27,11 +28,12 @@ public class CartController {
 
     @Autowired
     private CartRepository cartRepository;
-
     @Autowired
     private UserRepository userRepository; // For fetching User object
     @Autowired
     private CakeRepository cakeRepository; // For fetching Cake object
+    @Autowired
+    private PriceService priceService; // For calculating price based on selections
 
     private CartDTO convertToDTO(Cart cart) {
         return new CartDTO(
@@ -76,6 +78,7 @@ public class CartController {
 
     @PostMapping(value = "/add")
     public ResponseEntity<?> addToCart(@Valid @RequestBody CartDTO cartData) throws NoResourceFoundException {
+         // Calculate price based on cake and customizations
         if (cartData.getUserId() == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -84,7 +87,14 @@ public class CartController {
 
         Cake cake = cakeRepository.findById(cartData.getCakeId())
                 .orElseThrow(() -> new NoResourceFoundException(HttpMethod.POST, "/api/cart/add", "Cake ID not found"));
-
+        if (user == null || cake == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        double validatedPrice= priceService.calculateTotalItemPrice(
+                cake,
+                cartData.getSelectedSize(),
+                cartData.getSelectedFilling(),
+                cartData.getQuantity());
         Cart cart = new Cart();
         cart.setUser(user);
         cart.setCake(cake);
@@ -93,7 +103,7 @@ public class CartController {
         cart.setSelectedFlavour(cartData.getSelectedFlavour());
         cart.setSelectedFilling(cartData.getSelectedFilling());
         cart.setMessage(cartData.getMessage());
-        cart.setPrice(cartData.getPrice());
+        cart.setPrice(validatedPrice);
         cart.setStatus(Cart.Status.IN_CART);
 
         cartRepository.save(cart);
@@ -106,17 +116,26 @@ public class CartController {
 
         Cart cart = cartRepository.findById(id)
                 .orElseThrow(() -> new NoResourceFoundException(HttpMethod.PUT, "/api/cart/" + id, "Cart item not found"));
-
+        if (cart == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         if (cart.getStatus() != Cart.Status.IN_CART) {
             return new ResponseEntity<>("Only items in cart can be updated", HttpStatus.BAD_REQUEST);
         }
+        // Re-calculate the price based on new quantity/options
+        double newValidatedPrice = priceService.calculateTotalItemPrice(
+                cart.getCake(),
+                updatedCartData.getSelectedSize(),
+                updatedCartData.getSelectedFilling(),
+                updatedCartData.getQuantity()
+        );
 
         cart.setQuantity(updatedCartData.getQuantity());
         cart.setSelectedSize(updatedCartData.getSelectedSize());
         cart.setSelectedFlavour(updatedCartData.getSelectedFlavour());
         cart.setSelectedFilling(updatedCartData.getSelectedFilling());
         cart.setMessage(updatedCartData.getMessage());
-        cart.setPrice(updatedCartData.getPrice());
+        cart.setPrice(newValidatedPrice);
 
         cartRepository.save(cart);
         return new ResponseEntity<>(convertToDTO(cart), HttpStatus.OK);

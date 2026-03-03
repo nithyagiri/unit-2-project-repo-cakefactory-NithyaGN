@@ -2,7 +2,6 @@ package org.launchcode.cake_factory_back_end.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.transaction.Status;
 import org.hibernate.annotations.CreationTimestamp;
 import java.sql.Timestamp;
 import java.util.Objects;
