@@ -7,32 +7,32 @@ public class CartDTO {
     private Long cakeId;
     private String cakeName;
     private String cakeImage;
-    private int quantity;
+    private Integer quantity;
     private String selectedSize;
     private String selectedFlavour;
     private String selectedFilling;
     private String message;
-    private double price;
+    private Double price;
     private String status;
 
     public CartDTO() {}
 
-    // Fully matched constructor for your Controller's convertToDTO method
-    public CartDTO(Long id, Long userId, Long cakeId, String cakeName, String cakeImage,
+    // Fully matched constructor for Controller's convertToDTO method
+   public CartDTO(Long id, Long userId, Long cakeId, String cakeName, String cakeImage,
                    int quantity, String selectedSize, String selectedFlavour,
-                   String selectedFilling, String message, double price, String status) {
-        this.id = id;
-        this.userId = userId; // Now properly receiving the parameter!
-        this.cakeId = cakeId;
-        this.cakeName = cakeName;
-        this.cakeImage = cakeImage;
-        this.quantity = quantity;
-        this.selectedSize = selectedSize;
-        this.selectedFlavour = selectedFlavour;
-        this.selectedFilling = selectedFilling;
-        this.message = message;
-        this.price = price;
-        this.status = status;
+                   String selectedFilling, String message, Double price, String status) {
+       this.id = id;
+       this.userId = userId; // Now properly receiving the parameter!
+       this.cakeId = cakeId;
+       this.cakeName = cakeName;
+       this.cakeImage = cakeImage;
+       this.quantity = quantity;
+       this.selectedSize = selectedSize;
+       this.selectedFlavour = selectedFlavour;
+       this.selectedFilling = selectedFilling;
+       this.message = message;
+       this.price = price;
+       this.status = status;
     }
 
     // GETTERS AND SETTERS
@@ -51,7 +51,7 @@ public class CartDTO {
     public String getCakeImage() { return cakeImage; }
     public void setCakeImage(String cakeImage) { this.cakeImage = cakeImage; }
 
-    public int getQuantity() { return quantity; }
+    public Integer getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
     public String getSelectedSize() { return selectedSize; }
@@ -66,8 +66,8 @@ public class CartDTO {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

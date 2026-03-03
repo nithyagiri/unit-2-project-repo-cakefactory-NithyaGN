@@ -11,11 +11,13 @@ import org.launchcode.cake_factory_back_end.repositories.CartRepository;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
 import org.launchcode.cake_factory_back_end.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,27 +57,35 @@ public class CartController {
     // GET all cart items by user
     @GetMapping(value = "/user/{userId}")
     public ResponseEntity<?> getCartByUser(@PathVariable Long userId) throws NoResourceFoundException {
-        List<Cart> cartItems = cartRepository.findByUser_Id(userId);
+        List<Cart> cartItems = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+
+        //calculate the grand Total for all items in the cart
+        double grandTotal = cartItems.stream().mapToDouble(Cart::getPrice).sum();
 
         if (cartItems.isEmpty()) {
-            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId, "No items in cart for this user");
+            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId,"No items found in cart");
         }else {
             List<CartDTO> dtoList = cartItems.stream().map(this::convertToDTO).collect(Collectors.toList());
-            return new ResponseEntity<>(dtoList, HttpStatus.OK);
+            Map<String, Object> response = new HashMap<>();
+            response.put("cartItems", dtoList);
+            response.put("grandTotal", grandTotal);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
     }
 
+    // GET all confirmed orders by user
     @GetMapping(value = "/user/{userId}/orders")
     public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) throws NoResourceFoundException {
         List<Cart> orders = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.CONFIRMED);
         if (orders.isEmpty()) {
-            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId + "/orders", "No confirmed orders found");
+            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId + "/orders", "No orders found");
         } else {
             List<CartDTO> orderDTOs = orders.stream().map(this::convertToDTO).collect(Collectors.toList());
             return new ResponseEntity<>(orderDTOs, HttpStatus.OK);
         }
     }
 
+    // Add Cart Item - POST /api/cart/add
     @PostMapping(value = "/add")
     public ResponseEntity<?> addToCart(@Valid @RequestBody CartDTO cartData) throws NoResourceFoundException {
          // Calculate price based on cake and customizations
@@ -110,7 +120,7 @@ public class CartController {
 
         return new ResponseEntity<>(convertToDTO(cart), HttpStatus.CREATED);
     }
-
+    // Update Cart Item - PUT /api/cart/{id}
     @PutMapping(value = "/{id}")
     public ResponseEntity<?> updateCartItem(@PathVariable Long id, @Valid @RequestBody CartDTO updatedCartData) throws NoResourceFoundException {
 
@@ -145,7 +155,7 @@ public class CartController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCartItem(@PathVariable Long id) throws NoResourceFoundException {
         Cart cart = cartRepository.findById(id)
-                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.DELETE, "/api/cart/" + id, "Cart item not found"));
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.DELETE, "/api/cart/" + id,"Cart item not found"));
 
         if (cart.getStatus() != Cart.Status.IN_CART) {
             return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
