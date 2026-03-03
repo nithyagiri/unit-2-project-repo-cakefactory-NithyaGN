@@ -1,19 +1,22 @@
 package org.launchcode.cake_factory_back_end.controllers;
 
+import jakarta.validation.Valid;
 import org.launchcode.cake_factory_back_end.dto.UserDTO;
 import org.launchcode.cake_factory_back_end.models.User;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.security.MessageDigest;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     @Autowired
@@ -21,6 +24,10 @@ public class UserController {
 
     // Helper method to hash password with SHA-256
     private String hashPassword(String password) {
+        if (password == null || password.isBlank()) {
+            // This prevents the RuntimeException from occurring
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hashed = md.digest(password.getBytes());
@@ -44,59 +51,72 @@ public class UserController {
     }
 
     // POST /api/users/register
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserDTO userDto) {
+    @PostMapping(value = "/register")
 
-        // Check if name, email or password is empty
-        if (userDto.getName() == null || userDto.getName().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Name is required");
-        }
-        if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is required");
-        }
-        if (userDto.getPassword() == null || userDto.getPassword().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password is required");
-        }
+        public ResponseEntity<?> register(@RequestBody UserDTO userDto) {
+            if (userDto.getName() == null || userDto.getName().isBlank()) {
+            return new ResponseEntity<>("Name is required", HttpStatus.BAD_REQUEST);
+            }
+            if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
+            return new ResponseEntity<>("Email is required", HttpStatus.BAD_REQUEST);
+            }
+        // This check stops the "Password cannot be null or empty" crash!
+            if (userDto.getPassword() == null || userDto.getPassword().isBlank()) {
+            return new ResponseEntity<>("Password is required", HttpStatus.BAD_REQUEST);
+                }
 
-        // Check if user already exists
-        Optional<User> existing = userRepository.findByEmail(userDto.getEmail());
-        if (existing.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists with this email");
+            if (userDto.getName() == null || userDto.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Name is required", HttpStatus.BAD_REQUEST); // 400
+            }
+
+            if (userDto.getEmail() == null || userDto.getEmail().trim().isEmpty()) {
+                return new ResponseEntity<>("Email is required", HttpStatus.BAD_REQUEST); // 400
+            }
+
+            //  Check if user already exists
+            Optional<User> existing = userRepository.findByEmail(userDto.getEmail());
+            if (existing.isPresent()) {
+                return new ResponseEntity<>("User already exists with this email", HttpStatus.CONFLICT); // 409
+            }
+
+            // Mapping and Saving
+            User user = new User();
+            user.setName(userDto.getName());
+            user.setEmail(userDto.getEmail());
+            user.setPassword(hashPassword(userDto.getPassword()));
+
+            userRepository.save(user);
+
+            return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED); // 201
         }
-        User user = new User();
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        // Hash the password before saving
-        user.setPassword(hashPassword(userDto.getPassword()));
-        userRepository.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
-    }
 
     // POST /api/users/login
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserDTO loginRequest) {
+    @PostMapping(value = "/login")
+    public ResponseEntity<?> login(@Valid @RequestBody UserDTO loginRequest) throws NoResourceFoundException {
 
-        // Check if email or password is empty
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email is required");
+            return new ResponseEntity<>("Email is required", HttpStatus.BAD_REQUEST);
         }
+
         if (loginRequest.getPassword() == null || loginRequest.getPassword().isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password is required");
+            return new ResponseEntity<>("Password is required", HttpStatus.BAD_REQUEST);
         }
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new NoResourceFoundException(
+                        HttpMethod.POST,
+                        "/api/users/login",
+                        "No account found with this email"
+                ));
 
-
-        // Check if user exists
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No account found with this email");
-        }
-
-        // Check if password matches
+        // Check password
         String hashedInput = hashPassword(loginRequest.getPassword());
-        if (!hashedInput.equals(user.get().getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
+        if (!hashedInput.equals(user.getPassword())) {
+            return new ResponseEntity<>("Incorrect password", HttpStatus.UNAUTHORIZED); // 401
         }
-        UserDTO userDTO =new UserDTO(user.get().getId(), user.get().getName(), user.get().getEmail());;
-        return ResponseEntity.ok(userDTO);
+
+        // Convert to DTO for the response
+        UserDTO responseDto = new UserDTO(user.getId(), user.getName(), user.getEmail());
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK); // 200
     }
 }

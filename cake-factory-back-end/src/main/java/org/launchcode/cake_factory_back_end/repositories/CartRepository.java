@@ -5,6 +5,7 @@ import org.launchcode.cake_factory_back_end.models.Cart;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,5 +23,5 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Modifying
     @Transactional
     @Query("DELETE FROM Cart c WHERE c.user.id = :userId AND c.status = :status")
-         void deleteByUser_IdAndStatus(Long userId,Cart.Status status);
+    void deleteByUser_IdAndStatus(@Param("userId") Long userId, @Param("status") Cart.Status status);
 }
