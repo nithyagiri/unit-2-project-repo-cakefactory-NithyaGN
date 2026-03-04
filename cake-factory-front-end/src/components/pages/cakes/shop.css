@@ -1,0 +1,67 @@
+
+#cake-card-container{
+    column-count:1;
+    column-gap:1rem;
+    padding:1rem;   
+}
+.cake-card-text{
+  display: flex;
+  flex-direction: column;
+  word-wrap: break-word;
+  white-space: normal;
+  align-items: center;    
+  text-align: center;
+  padding: 0.5rem 0;
+}
+.cake-card-text > h5{
+    margin-bottom:4px;
+}
+.cake-card-text > h6{
+    margin-top: 0;
+}
+.cake-card-image{
+    width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  object-fit: cover;
+  display: block;
+}
+/* Tablet: 2 columns */
+@media screen and (min-width: 600px) {
+    header{
+        justify-content: space-between;
+        padding:15px clamp(20px,4vw,30px);
+    }
+     .nav-menu {
+    flex-direction: row;  
+    align-items: center;     
+    gap: 12px;               
+    padding: 10px 0;
+  }
+    
+  #cake-card-container {
+    column-count:2;
+    column-gap: 1.5rem;
+  }
+}
+
+/* Desktop: 3 columns */
+@media screen and (min-width: 1024px) {
+   #cake-card-container {
+    column-count:3;
+    column-gap: 2rem;
+  }
+  
+}
+
+
+/* Optional: Large desktop (4 columns) */
+@media screen and (min-width: 1440px) {
+  #cake-card-container {
+    column-count:4;
+    column-gap: 2rem; 
+     }
+     
+}

@@ -1,0 +1,5 @@
+Manual Testing and Error Handling
+
+The application has been manually tested to ensure all user flows function correctly and provide a smooth user experience. This includes navigating from the homepage to product selection, checkout, payment, and success pages, as well as editing and deleting items in the cart and handling empty cart scenarios. Direct URL navigation to individual pages was tested to ensure proper routing without errors.
+
+Responsive behavior has been verified across mobile, tablet, and desktop screens, with product cards, images, and buttons scaling appropriately and maintaining usability. All form inputs have proper validation to prevent incorrect submissions, and  data fetch errors are caught and displayed as user-friendly messages. Critical operations, such as payment submission, are wrapped in error handling to prevent application crashes, while console warnings and logs are maintained for debugging. Overall, these measures ensure the app is stable, reliable, and user-friendly across devices and scenarios.
