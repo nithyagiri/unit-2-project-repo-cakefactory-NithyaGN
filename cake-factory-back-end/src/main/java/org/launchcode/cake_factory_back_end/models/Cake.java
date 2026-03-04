@@ -1,7 +1,7 @@
 package org.launchcode.cake_factory_back_end.models;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,18 +45,19 @@ public class Cake {
     @Column(columnDefinition = "TEXT")
     private String fillings;
 
+    @Column(name = "can_write_message")
     private Boolean canWriteMessage;
 
     public enum Category {
         BIRTHDAY, WEDDING, ANNIVERSARY, CUPCAKE, OTHER
     }
+
+    //one cake can be in many carts
     @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
-    @JsonIgnore
+    @JsonManagedReference("cake-cart")
     private List<Cart> cartItems = new ArrayList<>();
 
-    @OneToMany(mappedBy = "cake", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Order> orders = new ArrayList<>();
+
 
     public Cake() {}
 
@@ -72,8 +73,23 @@ public class Cake {
         this.fillings = fillings;
         this.canWriteMessage = canWriteMessage;
     }
-    // Getters and Setters
 
+    public Cake(Long id, String name, String description, Double price, Boolean customization, Category category, String image_id, String sizes, String flavors, String fillings, Boolean canWriteMessage, List<Cart> cartItems) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.customization = customization;
+        this.category = category;
+        this.image_id = image_id;
+        this.sizes = sizes;
+        this.flavors = flavors;
+        this.fillings = fillings;
+        this.canWriteMessage = canWriteMessage;
+        this.cartItems = cartItems;
+    }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -171,14 +187,6 @@ public class Cake {
         this.cartItems = cartItems;
     }
 
-    public List<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
-    }
-
     @Override
     public String toString() {
         return "cake{" +
@@ -198,14 +206,15 @@ public class Cake {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cake cake = (Cake) o;
         return Objects.equals(id, cake.id);
     }
 
-
     @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
+    public int hashCode()
+    {
+        return Objects.hash(id);
     }
 }
