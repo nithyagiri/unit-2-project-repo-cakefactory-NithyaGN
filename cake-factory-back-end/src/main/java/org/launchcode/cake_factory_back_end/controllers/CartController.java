@@ -1,6 +1,7 @@
 package org.launchcode.cake_factory_back_end.controllers;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.launchcode.cake_factory_back_end.dto.CartDTO;
 import org.launchcode.cake_factory_back_end.models.Cake;
 import org.launchcode.cake_factory_back_end.models.Cart;
@@ -8,10 +9,15 @@ import org.launchcode.cake_factory_back_end.models.User;
 import org.launchcode.cake_factory_back_end.repositories.CakeRepository;
 import org.launchcode.cake_factory_back_end.repositories.CartRepository;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
+import org.launchcode.cake_factory_back_end.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,21 +25,22 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CartController {
 
     @Autowired
     private CartRepository cartRepository;
-
     @Autowired
     private UserRepository userRepository; // For fetching User object
     @Autowired
     private CakeRepository cakeRepository; // For fetching Cake object
+    @Autowired
+    private PriceService priceService; // For calculating price based on selections
 
-    // Helper method to convert Cart to CartDTO
     private CartDTO convertToDTO(Cart cart) {
         return new CartDTO(
                 cart.getId(),
+                cart.getUser().getId(),
                 cart.getCake().getId(),
                 cart.getCake().getName(),
                 cart.getCake().getImage_id(),
@@ -48,141 +55,152 @@ public class CartController {
     }
 
     // GET all cart items by user
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
-        List<Cart> cartItems = cartRepository.findByUser_Id(userId);
+    @GetMapping(value = "/user/{userId}")
+    public ResponseEntity<?> getCartByUser(@PathVariable Long userId) throws NoResourceFoundException {
+        List<Cart> cartItems = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+
+        //calculate the grand Total for all items in the cart
+        double grandTotal = cartItems.stream().mapToDouble(Cart::getPrice).sum();
+
         if (cartItems.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No cart items found for this user");
+            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId,"No items found in cart");
+        }else {
+            List<CartDTO> dtoList = cartItems.stream().map(this::convertToDTO).collect(Collectors.toList());
+            Map<String, Object> response = new HashMap<>();
+            response.put("cartItems", dtoList);
+            response.put("grandTotal", grandTotal);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        //  Convert each Cart to CartDTO
-        List<CartDTO> cartDTOs = cartItems.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(cartItems);
     }
 
-    // GET /api/cart/user/{userId}/orders - confirmed orders only
-    @GetMapping("/user/{userId}/orders")
-    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) {
-        List<Cart> orders = cartRepository
-                .findByUser_IdAndStatus(userId, Cart.Status.CONFIRMED);
+    // GET all confirmed orders by user
+    @GetMapping(value = "/user/{userId}/orders")
+    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) throws NoResourceFoundException {
+        List<Cart> orders = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.CONFIRMED);
         if (orders.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No orders found for this user");
+            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId + "/orders", "No orders found");
+        } else {
+            List<CartDTO> orderDTOs = orders.stream().map(this::convertToDTO).collect(Collectors.toList());
+            return new ResponseEntity<>(orderDTOs, HttpStatus.OK);
         }
-        List<CartDTO> orderDTOs = orders.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(orders);
     }
 
-    // POST add item to cart
-    @PostMapping
-    public ResponseEntity<?> addToCart(@RequestBody Cart cart,
-                                       @RequestParam Long userId,
-                                       @RequestParam Long cakeId) {
-        // fetch User object
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    // Add Cart Item - POST /api/cart/add
+    @PostMapping(value = "/add")
+    public ResponseEntity<?> addToCart(@Valid @RequestBody CartDTO cartData) throws NoResourceFoundException {
+         // Calculate price based on cake and customizations
+        if (cartData.getUserId() == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        // fetch Cake object
-        Optional<Cake> cake = cakeRepository.findById(cakeId);
-        if (cake.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cake not found");
-        }
+        User user = userRepository.findById(cartData.getUserId())
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.POST, "/api/cart/add", "User ID not found"));
 
-        if (cart.getQuantity() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity must be greater than 0");
+        Cake cake = cakeRepository.findById(cartData.getCakeId())
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.POST, "/api/cart/add", "Cake ID not found"));
+        if (user == null || cake == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        double validatedPrice= priceService.calculateTotalItemPrice(
+                cake,
+                cartData.getSelectedSize(),
+                cartData.getSelectedFilling(),
+                cartData.getQuantity());
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart.setCake(cake);
+        cart.setQuantity(cartData.getQuantity());
+        cart.setSelectedSize(cartData.getSelectedSize());
+        cart.setSelectedFlavour(cartData.getSelectedFlavour());
+        cart.setSelectedFilling(cartData.getSelectedFilling());
+        cart.setMessage(cartData.getMessage());
+        cart.setPrice(validatedPrice);
+        cart.setStatus(Cart.Status.IN_CART);
 
-        // set objects instead of IDs
-        cart.setUser(user.get());
-        cart.setCake(cake.get());
-        cart.setStatus(Cart.Status.IN_CART); // default status when adding to cart
         cartRepository.save(cart);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Item added to cart successfully"); }
 
-    // PUT update cart item
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateCartItem(@PathVariable Long id,
-                                            @RequestBody Cart updatedCart,
-                                            @RequestParam (required = false) Long cakeId) {
-        Optional<Cart> existing = cartRepository.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
+        return new ResponseEntity<>(convertToDTO(cart), HttpStatus.CREATED);
+    }
+    // Update Cart Item - PUT /api/cart/{id}
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<?> updateCartItem(@PathVariable Long id, @Valid @RequestBody CartDTO updatedCartData) throws NoResourceFoundException {
+
+        Cart cart = cartRepository.findById(id)
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.PUT, "/api/cart/" + id, "Cart item not found"));
+        if (cart == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        Cart cart = existing.get();
         if (cart.getStatus() != Cart.Status.IN_CART) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only items in cart can be updated");
+            return new ResponseEntity<>("Only items in cart can be updated", HttpStatus.BAD_REQUEST);
         }
-        cart.setQuantity(updatedCart.getQuantity());
-        cart.setSelectedSize(updatedCart.getSelectedSize());
-        cart.setSelectedFlavour(updatedCart.getSelectedFlavour());
-        cart.setSelectedFilling(updatedCart.getSelectedFilling());
-        cart.setMessage(updatedCart.getMessage());
-        cart.setPrice(updatedCart.getPrice());
-        // update cake if cakeId is provided
-        if (cakeId != null) {
-            Optional<Cake> cake = cakeRepository.findById(cakeId);
-            if (cake.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cake not found");
-            }
-            cart.setCake(cake.get());
-        }
-        cartRepository.save(cart);
-        return ResponseEntity.ok("Cart item updated successfully");
-    }
+        // Re-calculate the price based on new quantity/options
+        double newValidatedPrice = priceService.calculateTotalItemPrice(
+                cart.getCake(),
+                updatedCartData.getSelectedSize(),
+                updatedCartData.getSelectedFilling(),
+                updatedCartData.getQuantity()
+        );
 
-    // DELETE single cart item
+        cart.setQuantity(updatedCartData.getQuantity());
+        cart.setSelectedSize(updatedCartData.getSelectedSize());
+        cart.setSelectedFlavour(updatedCartData.getSelectedFlavour());
+        cart.setSelectedFilling(updatedCartData.getSelectedFilling());
+        cart.setMessage(updatedCartData.getMessage());
+        cart.setPrice(newValidatedPrice);
+
+        cartRepository.save(cart);
+        return new ResponseEntity<>(convertToDTO(cart), HttpStatus.OK);
+    }
+    // Delete Single Cart Item - DELETE /api/cart/{id}
     @Transactional
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCartItem(@PathVariable Long id) {
-        Optional<Cart> existing = cartRepository.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
+    public ResponseEntity<?> deleteCartItem(@PathVariable Long id) throws NoResourceFoundException {
+        Cart cart = cartRepository.findById(id)
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.DELETE, "/api/cart/" + id,"Cart item not found"));
+
+        if (cart.getStatus() != Cart.Status.IN_CART) {
+            return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
         }
-        if (existing.get().getStatus() != Cart.Status.IN_CART) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only items in cart can be removed");
-        }
+
         cartRepository.deleteById(id);
-        return ResponseEntity.ok("Item removed from cart");
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    // DELETE /api/cart/user/{userId} - clear entire cart
+    //Clear Cart - DELETE /api/cart/user/{userId}
     @Transactional
     @DeleteMapping("/user/{userId}")
-    public ResponseEntity<String> clearCart(@PathVariable Long userId) {
-        List<Cart> cartItems = cartRepository
-                .findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+    public ResponseEntity<?> clearCart(@PathVariable Long userId) throws NoResourceFoundException {
+        List<Cart> cartItems = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+
         if (cartItems.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No cart items found for this user");
+            throw new NoResourceFoundException(HttpMethod.DELETE, "/api/cart/user/" + userId, "Cart is already empty");
+        } else {
+            cartRepository.deleteByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+            return new ResponseEntity<>( HttpStatus.NO_CONTENT);
         }
-        cartRepository.deleteByUser_IdAndStatus(userId, Cart.Status.IN_CART);
-        return ResponseEntity.ok("Cart cleared successfully");
     }
-    // POST /api/cart/checkout/{userId} - checkout
+    //Checkout - POST /api/cart/checkout/{userId}
     @Transactional
-    @PostMapping("/checkout/{userId}")
-    public ResponseEntity<String> checkout(@PathVariable Long userId) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-        List<Cart> cartItems = cartRepository
-                .findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+    @PostMapping(value = "/checkout/{userId}")
+    public ResponseEntity<?> checkout(@PathVariable Long userId) throws NoResourceFoundException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NoResourceFoundException(HttpMethod.POST, "/api/cart/checkout/" + userId, "User not found"));
+
+        List<Cart> cartItems = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
+
         if (cartItems.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cart is empty");
+            return new ResponseEntity<>("Cart is empty", HttpStatus.BAD_REQUEST);
         }
-        //  Just update status to CONFIRMED
+
         for (Cart cart : cartItems) {
             cart.setStatus(Cart.Status.CONFIRMED);
-            cartRepository.save(cart);
         }
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Order confirmed! Your delicious cake order is on its way.");
-    }
+        cartRepository.saveAll(cartItems);
 
+        // Convert the confirmed items to DTOs for the response
+        List<CartDTO> confirmedOrderDTOs = cartItems.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        // Return the list of DTOs in the standard ResponseEntity format
+        return new ResponseEntity<>(confirmedOrderDTOs, HttpStatus.CREATED);
+}
 }

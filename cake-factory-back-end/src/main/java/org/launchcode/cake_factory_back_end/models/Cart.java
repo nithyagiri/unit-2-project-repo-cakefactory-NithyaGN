@@ -2,7 +2,6 @@ package org.launchcode.cake_factory_back_end.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.transaction.Status;
 import org.hibernate.annotations.CreationTimestamp;
 import java.sql.Timestamp;
 import java.util.Objects;
@@ -29,7 +28,7 @@ public class Cart {
     private Cake cake;
 
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "selected_size")
     private String selectedSize;
@@ -44,7 +43,7 @@ public class Cart {
     private String message;
 
     @Column(name = "price", nullable = false)
-    private double price;
+    private Double price;
 
     //ststus to track cart vs order
     @Enumerated(EnumType.STRING)
@@ -94,7 +93,7 @@ public class Cart {
         this.cake = cake;
     }
 
-    public int getQuantity()
+    public Integer getQuantity()
     {
         return quantity;
     }
@@ -134,12 +133,12 @@ public class Cart {
     {
         this.message = message;
     }
-    public double getPrice() {
+    public Double getPrice() {
 
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
 
         this.price = price;
     }
