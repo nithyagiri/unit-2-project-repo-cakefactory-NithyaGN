@@ -1,31 +1,98 @@
-import CakeCard from "./CakeCard";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import "./shop.css"
-const ShopPage =({cakes, setSelectedCake}) => 
-  {
-   const navigate = useNavigate();
-   const handleSelectCake = (cake) => {
+import CakeCard from "./CakeCard";
+import { useData } from '../../../context/DataContext';
+import "./shop.css";
+
+const ShopPage = ({ setSelectedCake }) => {
+  const navigate = useNavigate();
+  const { allCakes, isLoading } = useData();
+
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const handleSelectCake = (cake) => {
     setSelectedCake(cake);
-    navigate ('/order');
+    navigate("/order");
   };
-  let cakeJSX=[...cakes].map(cake=>{
-    return <CakeCard key={cake.id} 
-                     cake ={cake} 
-                     onSelect={handleSelectCake}/>
-  });
-    return(
+
+  // Derive unique categories from allCakes
+  const categories = useMemo(() => {
+    if (!allCakes) return ["All"];
+    const cats = allCakes.map((c) => c.category).filter(Boolean);
+    return ["All", ...new Set(cats)];
+  }, [allCakes]);
+
+  // Filter cakes by selected category
+  const filteredCakes = useMemo(() => {
+    if (!allCakes) return [];
+    if (activeCategory === "All") return allCakes;
+    return allCakes.filter((cake) => cake.category === activeCategory);
+  }, [allCakes, activeCategory]);
+
+  // Loading state
+  if (isLoading) {
+    return (
       <main className="main-content">
-      <h1>All Occasion Cakes and Cupcakes</h1>
-      {cakes.length ? (
-              <div id="cake-card-container">
-                 {cakeJSX}
-              </div>):( 
-                        <p> We're sorry, there are no cakes to order at  this time. Please visit again. 
-                            Thank you for visiting our site. </p>
-                      )
-      }
-    </main>
+        <div className="shop-empty">
+          <span className="shop-empty-icon">🎂</span>
+          <p>⏳ Loading cakes...</p>
+        </div>
+      </main>
     );
+  }
+
+  return (
+    <main className="main-content">
+      <h1>All Occasion Cakes and Cupcakes</h1>
+
+      {/* Category dropdown filter */}
+      <div className="shop-filter-wrapper">
+        <label htmlFor="category-filter" className="shop-filter-label">
+          Filter by Category:
+        </label>
+        <select
+          id="category-filter"
+          className="shop-filter-select"
+          value={activeCategory}
+          onChange={(e) => setActiveCategory(e.target.value)}
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Results count */}
+      <p className="shop-results-count">
+        {filteredCakes.length} cake{filteredCakes.length !== 1 ? "s" : ""} found
+      </p>
+
+      {/* Cake grid */}
+      {filteredCakes.length ? (
+        <div id="cake-card-container">
+          {filteredCakes.map((cake) => (
+            <div className="cake-card" key={cake.id}> 
+            <CakeCard
+              key={cake.id}
+              cake={cake}
+              onSelect={handleSelectCake}
+            />
+             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="shop-empty">
+          <span className="shop-empty-icon">🎂</span>
+          <p>No cakes found in this category. Please visit again.</p>
+          <button className="common-btn" onClick={() => setActiveCategory("All")}>
+            🔄 Show All Cakes
+          </button>
+        </div>
+      )}
+    </main>
+  );
 };
+
 export default ShopPage;
- 

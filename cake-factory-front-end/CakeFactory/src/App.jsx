@@ -6,6 +6,7 @@ import Footer from './components/layout/Footer.jsx';
 import ShopPage from './components/pages/cakes/ShopPage.jsx';
 import HomePage from './components/pages/home/HomePage.jsx';
 import ContactPage from './components/pages/contact/ContactPage.jsx';
+import LoginPage from './components/pages/login/Login.jsx';
 import {mockCake} from './test-data/mockCake.js';
 import OrderPage from './components/pages/order/OrderPage.jsx';
 import CheckoutPage from './components/pages/checkout/CheckoutPage.jsx';
@@ -23,11 +24,12 @@ return(
     <main>
     <Routes>
      <Route path="/" element ={<HomePage setSelectedCake={setSelectedCake} />}/>
-     <Route path="/shop" element={<ShopPage cakes= {mockCake} setSelectedCake={setSelectedCake}/>} />
+     <Route path="/shop" element={<ShopPage setSelectedCake={setSelectedCake} />} />
      <Route path="/order" element={<OrderPage cake={selectedCake} setCart={setCart} editingItemId={editingItemId} setEditingItemId={setEditingItemId}/>} />
      <Route path="/checkout" element={<CheckoutPage cart={cart} setCart={setCart} setEditingItemId={setEditingItemId} setSelectedCake={setSelectedCake} setOrderTotal={setOrderTotal} />} />
      <Route path="/payment" element={<PaymentPage total={orderTotal} setCart={setCart} />} />     
      <Route path="/contact" element={<ContactPage />} />
+     <Route path="/login" element={<LoginPage />} />
     </Routes>
     </main>
     <Footer />
