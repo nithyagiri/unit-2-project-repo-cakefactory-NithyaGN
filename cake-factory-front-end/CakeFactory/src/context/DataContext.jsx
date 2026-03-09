@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect} from 'react';
-import Cakes from '../classes/Cakes';
+import Cakes from '../class/cakes.js';
 
 export const DataContext = createContext();
 
