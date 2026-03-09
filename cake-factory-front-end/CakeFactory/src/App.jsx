@@ -23,9 +23,9 @@ return(
     <Header />
     <main>
     <Routes>
-     <Route path="/" element ={<HomePage setSelectedCake={setSelectedCake} />}/>
-     <Route path="/shop" element={<ShopPage setSelectedCake={setSelectedCake} />} />
-     <Route path="/order" element={<OrderPage cake={selectedCake} setCart={setCart} editingItemId={editingItemId} setEditingItemId={setEditingItemId}/>} />
+     <Route path="/" element ={<HomePage />}/>
+     <Route path="/shop" element={<ShopPage  />} />
+     <Route path="/order" element={<OrderPage setCart={setCart} editingItemId={editingItemId} setEditingItemId={setEditingItemId}/>} />
      <Route path="/checkout" element={<CheckoutPage cart={cart} setCart={setCart} setEditingItemId={setEditingItemId} setSelectedCake={setSelectedCake} setOrderTotal={setOrderTotal} />} />
      <Route path="/payment" element={<PaymentPage total={orderTotal} setCart={setCart} />} />     
      <Route path="/contact" element={<ContactPage />} />

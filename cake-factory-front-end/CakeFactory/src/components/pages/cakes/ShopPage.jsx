@@ -11,8 +11,7 @@ const ShopPage = ({ setSelectedCake }) => {
   const [activeCategory, setActiveCategory] = useState("All");
 
   const handleSelectCake = (cake) => {
-    setSelectedCake(cake);
-    navigate("/order");
+      navigate("/order", { state: { cakeId: cake.id } });
   };
 
   // Derive unique categories from allCakes
