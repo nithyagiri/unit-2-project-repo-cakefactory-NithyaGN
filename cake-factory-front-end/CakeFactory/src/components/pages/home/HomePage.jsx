@@ -4,7 +4,7 @@ import HomeImage from '../../../images/Home.jpeg';
 import { useData } from '../../../context/DataContext';
 import "./home.css";
 
-const HomePage = ({ setSelectedCake }) => {
+const HomePage = () => {
     const [isSpinning, setIsSpinning] = useState(false);
     const [surpriseCake, setSurpriseCake] = useState(null);
 
@@ -30,9 +30,8 @@ const HomePage = ({ setSelectedCake }) => {
 
     const goToOrder = () => {
         setIsSpinning(false);
-        setSelectedCake(surpriseCake);
-        navigate('/order');
-    };
+        navigate('/order', { state: { cakeId: surpriseCake.id } }); {/* ← pass cakeId via state */}
+};
 
     return (
         <main>

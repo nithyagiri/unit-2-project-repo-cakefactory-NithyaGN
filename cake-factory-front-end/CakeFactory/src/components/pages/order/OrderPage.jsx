@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import Select from "../../forms/input/Select.jsx";
 import Input from "../../forms/input/Input.jsx";
 import Button from "../../forms/input/Button.jsx";
+import { useData } from '../../../context/DataContext';
 import "./order.css"; 
 
+
 const OrderPage = ({
-  cake,
   setCart,
   editingItemId,
   setEditingItemId,
-}) => {
+  }) => {
   const navigate = useNavigate();
+  const location= useLocation();
+  const { allCakes, isLoading } = useData();
+
+  // Get cakeId passed via navigation state
+  const cakeId = location.state?.cakeId;
+  const cake = allCakes?.find((c) => c.id === cakeId) || null;
+
   const [form, setForm] = useState({
     size: "",
     flavour: "",
@@ -19,47 +27,10 @@ const OrderPage = ({
     message: "",
   });
  // Initialize options based on cake customization
-  let sizeOptions = [];
-  let flavourOptions = [];
-  let fillingOptions = [];
-  let canWriteMessage = false;
-  // Return early if no cake is selected
-   if (!cake) {
-    return (
-      <div>
-        <h2>No Cake Selected</h2>
-        <p>Please return to the Shop page and select a cake.</p>
-        <button onClick={() => navigate('/shop')}>Back to Shop</button>
-      </div>
-    );
-  }
- // Setup options if customization is allowed
-  if (cake.customization) {
-    if (cake.customization.sizes) {
-      sizeOptions = cake.customization.sizes.map((s) => ({
-        label: `${s.label} (+$${s.addPrice})`,
-        value: s.label,
-        addPrice: s.addPrice,
-      }));
-    }
-
-    if (cake.customization.flavors) {
-      flavourOptions = cake.customization.flavors.map((f) => ({
-        label: f.name,
-        value: f.name,
-      }));
-    }
-
-    if (cake.customization.fillings) {
-      fillingOptions = cake.customization.fillings.map((f) => ({
-        label: `${f.label} (+$${f.addPrice})`,
-        value: f.label,
-        addPrice: f.addPrice,
-      }));
-    }
-
-    canWriteMessage = cake.customization.canWriteMessage || false;
-  }
+  //let sizeOptions = [];
+  //let flavourOptions = [];
+  //let fillingOptions = [];
+  //let canWriteMessage = false;
 
   // Auto-fill when editing cart item
   useEffect(() => {
@@ -73,11 +44,44 @@ const OrderPage = ({
     }
   }, [cake, editingItemId]);
 
-   // Calculate additional price for size or filling
+  if (isLoading) {
+    return <p> Loading...</p>;
+  }
+
+  // Return early if no cake is selected
+   if (!cake) {
+    return (
+      <div>
+        <h2>No Cake Selected</h2>
+        <p>Please return to the Shop page and select a cake.</p>
+        <button onClick={() => navigate('/shop')}>Back to Shop</button>
+      </div>
+    );
+  }
+
+   // Setup options using Cakes class methods
+  const sizeOptions = cake.getParsedSizes().map((s) => ({
+    label: `${s.label} (+$${s.addPrice})`,
+    value: s.label,
+    addPrice: s.addPrice,
+  }));
+
+    const flavourOptions = cake.getParsedFlavors().map((f) => ({
+    label: f.name,
+    value: f.name,
+  }));
+
+  const fillingOptions = cake.getParsedFillings().map((f) => ({
+    label: `${f.label} (+$${f.addPrice})`,
+    value: f.label,
+    addPrice: f.addPrice,
+  }));
+
+  const canWriteMessage = cake.canWriteMessage || false;
+   
   const getPrice = (type, value) => {
     if (!value) return 0;
     let option;
-
     switch (type) {
       case "size":
         option = sizeOptions.find((o) => o.value === value);
@@ -91,7 +95,7 @@ const OrderPage = ({
     return option?.addPrice || 0;
   };
 
-  const handleSubmit = () => {
+   const handleSubmit = () => {
     const orderItem = {
       id: editingItemId || Date.now(),
       originalCakeId: cake.id,
@@ -103,20 +107,20 @@ const OrderPage = ({
       message: form.message,
       sizePrice: getPrice("size", form.size),
       fillingPrice: getPrice("filling", form.filling),
-      imageId: cake.imageId,
-      customize: cake.customize,
+      imageId: cake.image_id,
+      customize: cake.customization,
       quantity: 1,
     };
+
 
     setCart((prev) => {
     // CASE 1 — Updating an existing cart item
       if (editingItemId) {
-        const updated = prev.map((item) =>
-          item.id === editingItemId ? {...orderItem, quantity: item.quantity || 1} : item
-        );
-        return updated;
+        return prev.map((item) =>
+          item.id === editingItemId ? { ...orderItem, quantity: item.quantity || 1 } : item
+          );
       }
-    // CASE 2 — Adding a new item (check if it already exists with same selections)
+    // CASE 2 — Check if same cake with same options already exists
     const existingItem = prev.find(
       (item) =>
         item.originalCakeId === orderItem.originalCakeId &&
@@ -140,10 +144,8 @@ const OrderPage = ({
     navigate ('/checkout');
   };
 
- 
-
   const getImageURL = () => {
-    return "https://i.ibb.co/" + cake.imageId;
+    return "https://i.ibb.co/" + cake.image_id;
   };
 
   return (
@@ -159,6 +161,7 @@ const OrderPage = ({
         </div>
 
         {/* RIGHT DETAILS */}
+        
         <div className="order-details">
           <h1 className="order-title">{cake.name}</h1>
           <p className="order-price">${cake.price}</p>
@@ -166,7 +169,7 @@ const OrderPage = ({
           <p className="order-description">{cake.description}</p>
 
           <div className="order-form">
-            {cake.customize === "yes" && (
+            {cake.customization === true && (
               <>
                 <Select
                   label="Size:"
@@ -207,7 +210,7 @@ const OrderPage = ({
               </>
             )}
             <div>            
-              <Button className
+              <Button 
                 label={editingItemId ? "Update Cart" : "Add to Cart"}
                 onClick={handleSubmit}
               />

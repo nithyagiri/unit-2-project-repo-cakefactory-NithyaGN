@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import { useNavigate } from "react-router";
 import CakeCard from "./CakeCard";
 import { useData } from '../../../context/DataContext';
 import "./shop.css";
 
-const ShopPage = ({ setSelectedCake }) => {
+const ShopPage = () => {
   const navigate = useNavigate();
   const { allCakes, isLoading } = useData();
 
@@ -74,7 +74,6 @@ const ShopPage = ({ setSelectedCake }) => {
           {filteredCakes.map((cake) => (
             <div className="cake-card" key={cake.id}> 
             <CakeCard
-              key={cake.id}
               cake={cake}
               onSelect={handleSelectCake}
             />

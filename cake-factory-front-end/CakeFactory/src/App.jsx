@@ -1,4 +1,3 @@
-App.jsx
 import {useState} from 'react';
 import { Routes, Route } from 'react-router';
 import Header from './components/layout/Header.jsx';
