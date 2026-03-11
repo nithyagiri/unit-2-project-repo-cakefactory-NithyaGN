@@ -1,16 +1,13 @@
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo} from "react";
 import { useNavigate } from "react-router";
 import CakeCard from "./CakeCard";
-import { useData } from '../../../context/DataContext';
+import { useData } from '../../../context/DataContext.jsx';
 import "./shop.css";
 
 const ShopPage = () => {
   const navigate = useNavigate();
-  const { allCakes, isLoading } = useData();
-  if (allCakes && allCakes.length > 0) {
-    console.log("category value:", allCakes[0].category);
-    console.log("category type:", typeof allCakes[0].category);
-  }
+  const {allCakes, isLoading} = useData();
+ 
   const [activeCategory, setActiveCategory] = useState("All");
 
   const handleSelectCake = (cake) => {

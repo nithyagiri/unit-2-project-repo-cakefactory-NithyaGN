@@ -35,13 +35,6 @@ return(
   </div>
 )
 }
-function AppWithContext() {
-  return (
-    <DataContextProvider> 
-      <App />
-    </DataContextProvider>
-  );
-} 
 export default App
 
 

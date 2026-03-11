@@ -24,30 +24,14 @@ export default class Cart {
         this.selectedFilling = selectedFilling;
         this.message = message;
         this.price = price;
-        this.status = status;   
+        this.status = status;
     }
 
-    // Check status
     isInCart() { return this.status === "IN_CART"; }
     isConfirmed() { return this.status === "CONFIRMED"; }
     isCancelled() { return this.status === "CANCELLED"; }
-
-    // Get formatted price
-    getFormattedPrice() {
-        return `$${this.price.toFixed(2)}`;
-    }
-
-    // Get total 
-    getFormattedTotal() {
-        return `$${this.price.toFixed(2)}`;
-    }
-
-    // Get image URL
-    getImageURL() {
-        return "https://i.ibb.co/" + this.cakeImage;
-    }
-
-    // Get customization summary
+    getFormattedPrice() { return `$${this.price.toFixed(2)}`; }
+    getImageURL() { return "https://i.ibb.co/" + this.cakeImage; }
     getSummary() {
         const parts = [];
         if (this.selectedSize) parts.push(`Size: ${this.selectedSize}`);
