@@ -77,6 +77,42 @@
   gap: 18px;
 }
 
+/* ── Form Fields ── */
+.form-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 80px;   
+  color: #333;
+}
+
+.form-input {
+  flex: 1;  
+}
+
+.form-input select,
+.form-input input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff8f4;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input select:focus,
+.form-input input:focus {
+  border-color: rgb(255, 100, 130);
+  box-shadow: 0 0 0 3px rgba(255, 100, 130, 0.12);
+}
+
 @media screen and (min-width: 600px) {
   .order-card {
     flex-direction: row;

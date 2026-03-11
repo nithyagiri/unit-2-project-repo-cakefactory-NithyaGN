@@ -67,8 +67,8 @@ const OrderPage = ({
   }));
 
     const flavourOptions = cake.getParsedFlavors().map((f) => ({
-    label: f.name,
-    value: f.name,
+    label: f.label,
+    value: f.label,
   }));
 
   const fillingOptions = cake.getParsedFillings().map((f) => ({
@@ -76,7 +76,7 @@ const OrderPage = ({
     value: f.label,
     addPrice: f.addPrice,
   }));
-
+ 
   const canWriteMessage = cake.canWriteMessage || false;
    
   const getPrice = (type, value) => {

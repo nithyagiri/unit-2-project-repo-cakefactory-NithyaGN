@@ -7,7 +7,10 @@ import "./shop.css";
 const ShopPage = () => {
   const navigate = useNavigate();
   const { allCakes, isLoading } = useData();
-
+  if (allCakes && allCakes.length > 0) {
+    console.log("category value:", allCakes[0].category);
+    console.log("category type:", typeof allCakes[0].category);
+  }
   const [activeCategory, setActiveCategory] = useState("All");
 
   const handleSelectCake = (cake) => {

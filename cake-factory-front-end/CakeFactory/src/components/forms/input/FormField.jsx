@@ -1,8 +1,8 @@
 const FormField = ({ label, children }) => {
   return (
-    <div >
-      <label >{label}</label>
-      {children}
+    <div className="form-field">
+      <label className="form-label">{label}</label>
+      <div className="form-input">{children}</div>
     </div>
   );
 };
