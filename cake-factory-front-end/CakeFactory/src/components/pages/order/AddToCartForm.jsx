@@ -15,7 +15,7 @@ let errorMessages = {
 
 const AddToCartForm = ({ cake }) => {
     const navigate = useNavigate();
-    const { fetchCart } = useData();
+    const { fetchCart, currentUser } = useData();  // ← add currentUser
 
     const [formData, setFormData] = useState({
         size: '',
@@ -26,7 +26,6 @@ const AddToCartForm = ({ cake }) => {
     const [hasErrors, setHasErrors] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    // Auto focus first field
     const firstFieldRef = useRef(null);
     useEffect(() => {
         if (firstFieldRef.current) {
@@ -34,7 +33,6 @@ const AddToCartForm = ({ cake }) => {
         }
     }, []);
 
-    // Parse options from Cakes class methods 
     const sizeOptions = cake.getParsedSizes().map((s) => ({
         label: `${s.label} (+$${s.addPrice})`,
         value: s.label,
@@ -54,7 +52,7 @@ const AddToCartForm = ({ cake }) => {
 
     const canWriteMessage = cake.canWriteMessage || false;
 
-    // Save to backend
+    // ── Save to backend ──
     const saveToCart = async (cartDTO) => {
         try {
             const response = await fetch('http://localhost:8080/api/cart/add', {
@@ -62,14 +60,15 @@ const AddToCartForm = ({ cake }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cartDTO),
             });
+            const responseText = await response.text();
+        console.log("Status:", response.status);
+        console.log("Backend response:", responseText);  // ← shows ex
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(
-                    errorData.message || `ERROR - Status ${response.status}`
-                );
+                const errorText = await response.text();  // ← fix: text() not json()
+                throw new Error(errorText || `ERROR - Status ${response.status}`);
             } else {
-                fetchCart();
+                 await fetchCart(currentUser?.id || 1); 
                 navigate('/checkout');
             }
         } catch (error) {
@@ -79,27 +78,21 @@ const AddToCartForm = ({ cake }) => {
         }
     };
 
-    // Handle field changes 
-    const handleChange = (event) => {
-        setFormData({
-            ...formData,
-            [event.target.id]: event.target.value,
-        });
-    };
-
     // ── Handle Submit ──
     const handleSubmit = (event) => {
         event.preventDefault();
 
         const cartDTO = new CartDTO(
-            null,               // userId — null until login is implemented
+            currentUser?.id || 1,  // ← uses logged in user, falls back to 1 for testing
             cake.id,
-            1,                  
+            1,
             formData.size,
             formData.flavour,
             formData.filling,
             formData.message
         );
+
+        console.log("CartDTO being sent:", JSON.stringify(cartDTO));
 
         if (!cartDTO.isValid()) {
             setSubmitting(false);
@@ -119,7 +112,7 @@ const AddToCartForm = ({ cake }) => {
                             id="size"
                             label="Size:"
                             value={formData.size}
-                            onChange={handleChange}
+                            onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                             options={sizeOptions}
                             ref={firstFieldRef}
                         />
@@ -128,12 +121,13 @@ const AddToCartForm = ({ cake }) => {
                             msg={errorMessages.sizeRequired}
                         />
                     </div>
+
                     <div className="form-field">
                         <Select
                             id="flavour"
                             label="Flavour:"
                             value={formData.flavour}
-                            onChange={handleChange}
+                            onChange={(e) => setFormData({ ...formData, flavour: e.target.value })}
                             options={flavourOptions}
                         />
                         <InputErrorMessage
@@ -141,12 +135,13 @@ const AddToCartForm = ({ cake }) => {
                             msg={errorMessages.flavourRequired}
                         />
                     </div>
+
                     <div className="form-field">
                         <Select
                             id="filling"
                             label="Filling:"
                             value={formData.filling}
-                            onChange={handleChange}
+                            onChange={(e) => setFormData({ ...formData, filling: e.target.value })}
                             options={fillingOptions}
                         />
                         <InputErrorMessage
@@ -154,13 +149,14 @@ const AddToCartForm = ({ cake }) => {
                             msg={errorMessages.fillingRequired}
                         />
                     </div>
+
                     {canWriteMessage && (
                         <div className="form-field">
                             <Input
                                 id="message"
                                 label="Message:"
                                 value={formData.message}
-                                onChange={handleChange}
+                                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                             />
                         </div>
                     )}

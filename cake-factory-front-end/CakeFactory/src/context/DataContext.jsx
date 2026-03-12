@@ -6,6 +6,8 @@ export const DataContext = createContext();
 
 export const DataContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
+    //User state
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Cake states
     const [allCakes, setAllCakes] = useState(null);
@@ -55,11 +57,11 @@ export const DataContextProvider = ({ children }) => {
          };
     
     // FETCH CART CAKES
-    const fetchCart = async () => {
+    const fetchCart = async (userId) => {
         setIsCartLoading(true);
         const carts = [];
         try{
-            const response = await fetch("http://localhost:8080/api/cart");
+            const response = await fetch(`http://localhost:8080/api/cart/user/${userId}`);
     
             if (!response.ok) {
                 setCartItems([]);
@@ -104,6 +106,12 @@ export const DataContextProvider = ({ children }) => {
         //fetchCart();
     }, []);
 
+    useEffect(() => {
+    if (currentUser?.id) {
+        fetchCart(currentUser.id);
+    }
+}, [currentUser]);
+
     // SET LOADING FALSE when cakes are loaded
     useEffect(() => {
         if (allCakes !== null) {
@@ -115,6 +123,7 @@ export const DataContextProvider = ({ children }) => {
         <DataContext.Provider
             value={{isLoading, allCakes, currentCakes, setCurrentCakes, fetchCakes,
                 cartItems, setCartItems, grandTotal, isCartLoading, fetchCart,
+                currentUser,setCurrentUser,
             }}>
             {children}
         </DataContext.Provider>

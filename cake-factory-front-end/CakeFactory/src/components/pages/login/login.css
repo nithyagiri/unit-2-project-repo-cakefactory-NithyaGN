@@ -160,6 +160,14 @@
   padding: 0;
   line-height: 1;
 }
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0;
+    font-size: inherit;
+}
 
 .error-msg {
   font-size: 0.8rem;

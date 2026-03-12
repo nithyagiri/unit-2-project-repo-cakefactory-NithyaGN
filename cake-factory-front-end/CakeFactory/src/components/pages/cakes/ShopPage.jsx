@@ -1,4 +1,4 @@
-import { useState, useMemo} from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import CakeCard from "./CakeCard";
 import { useData } from '../../../context/DataContext.jsx';
@@ -6,12 +6,14 @@ import "./shop.css";
 
 const ShopPage = () => {
   const navigate = useNavigate();
-  const {allCakes, isLoading} = useData();
- 
+  const { allCakes, isLoading } = useData();
+
   const [activeCategory, setActiveCategory] = useState("All");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
 
   const handleSelectCake = (cake) => {
-      navigate("/order", { state: { cakeId: cake.id } });
+    navigate("/order", { state: { cakeId: cake.id } });
   };
 
   // Derive unique categories from allCakes
@@ -21,14 +23,33 @@ const ShopPage = () => {
     return ["All", ...new Set(cats)];
   }, [allCakes]);
 
-  // Filter cakes by selected category
+  // Derive price bounds for placeholder hints
+  const { lowestPrice, highestPrice } = useMemo(() => {
+    if (!allCakes || !allCakes.length) return { lowestPrice: 0, highestPrice: 0 };
+    const prices = allCakes.map((c) => Number(c.price)).filter((p) => !isNaN(p));
+    return { lowestPrice: Math.min(...prices), highestPrice: Math.max(...prices) };
+  }, [allCakes]);
+
+  // Filter cakes by category + price range
   const filteredCakes = useMemo(() => {
     if (!allCakes) return [];
-    if (activeCategory === "All") return allCakes;
-    return allCakes.filter((cake) => cake.category === activeCategory);
-  }, [allCakes, activeCategory]);
+    return allCakes.filter((cake) => {
+      const matchesCategory = activeCategory === "All" || cake.category === activeCategory;
+      const price = Number(cake.price);
+      const matchesMin = minPrice === "" || price >= Number(minPrice);
+      const matchesMax = maxPrice === "" || price <= Number(maxPrice);
+      return matchesCategory && matchesMin && matchesMax;
+    });
+  }, [allCakes, activeCategory, minPrice, maxPrice]);
 
-  // Loading state
+  const hasActiveFilters = activeCategory !== "All" || minPrice !== "" || maxPrice !== "";
+
+  const clearFilters = () => {
+    setActiveCategory("All");
+    setMinPrice("");
+    setMaxPrice("");
+  };
+
   if (isLoading) {
     return (
       <main className="main-content">
@@ -44,23 +65,63 @@ const ShopPage = () => {
     <main className="main-content">
       <h1>All Occasion Cakes and Cupcakes</h1>
 
-      {/* Category dropdown filter */}
+      {/* Filters row */}
       <div className="shop-filter-wrapper">
-        <label htmlFor="category-filter" className="shop-filter-label">
-          Filter by Category:
-        </label>
-        <select
-          id="category-filter"
-          className="shop-filter-select"
-          value={activeCategory}
-          onChange={(e) => setActiveCategory(e.target.value)}
-        >
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+        {/* Category */}
+        <div className="shop-filter-group">
+          <label htmlFor="category-filter" className="shop-filter-label">
+            Category:
+          </label>
+          <select
+            id="category-filter"
+            className="shop-filter-select"
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Min price */}
+        <div className="shop-filter-group">
+          <label htmlFor="min-price" className="shop-filter-label">
+            Min Price ($) :
+          </label>
+          <input
+            id="min-price"
+            type="number"
+            className="shop-filter-input"
+            placeholder={`e.g. ${lowestPrice}`}
+            value={minPrice}
+            min={0}
+            onChange={(e) => setMinPrice(e.target.value)}
+          />
+        </div>
+
+        {/* Max price */}
+        <div className="shop-filter-group">
+          <label htmlFor="max-price" className="shop-filter-label">
+            Max Price ($) :
+          </label>
+          <input
+            id="max-price"
+            type="number"
+            className="shop-filter-input"
+            placeholder={`e.g. ${highestPrice}`}
+            value={maxPrice}
+            min={0}
+            onChange={(e) => setMaxPrice(e.target.value)}
+          />
+        </div>
+
+        {/* Clear filters */}
+        {hasActiveFilters && (
+          <button className="shop-filter-clear" onClick={clearFilters}>
+            ✕ Clear Filters
+          </button>
+        )}
       </div>
 
       {/* Results count */}
@@ -72,19 +133,16 @@ const ShopPage = () => {
       {filteredCakes.length ? (
         <div id="cake-card-container">
           {filteredCakes.map((cake) => (
-            <div className="cake-card" key={cake.id}> 
-            <CakeCard
-              cake={cake}
-              onSelect={handleSelectCake}
-            />
-             </div>
+            <div className="cake-card" key={cake.id}>
+              <CakeCard cake={cake} onSelect={handleSelectCake} />
+            </div>
           ))}
         </div>
       ) : (
         <div className="shop-empty">
           <span className="shop-empty-icon">🎂</span>
-          <p>No cakes found in this category. Please visit again.</p>
-          <button className="common-btn" onClick={() => setActiveCategory("All")}>
+          <p>No cakes found matching your filters.</p>
+          <button className="common-btn" onClick={clearFilters}>
             🔄 Show All Cakes
           </button>
         </div>
