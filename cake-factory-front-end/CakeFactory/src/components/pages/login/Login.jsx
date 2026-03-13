@@ -10,7 +10,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const { setCurrentUser } = useData();
 
-    const [isRegister, setIsRegister] = useState(false);  // ← toggle between login/register
+    const [isRegister, setIsRegister] = useState(false);  
 
     const [formData, setFormData] = useState({
         name: '',
@@ -26,7 +26,6 @@ const LoginPage = () => {
 
     const firstFieldRef = useRef(null);
 
-    // Auto focus first field when toggling
     useEffect(() => {
         firstFieldRef.current?.focus();
     }, [isRegister]);
@@ -69,7 +68,7 @@ const LoginPage = () => {
         }
     };
 
-    // ── Login API call ──
+    //Login API call
     const loginUser = async (userDTO) => {
         try {
             const response = await fetch('http://localhost:8080/api/users/login', {
@@ -94,7 +93,7 @@ const LoginPage = () => {
         }
     };
 
-    // ── Register API call ──
+    //Register API call
     const registerUser = async (userDTO) => {
         try {
             const response = await fetch('http://localhost:8080/api/users/register', {
@@ -148,8 +147,7 @@ const LoginPage = () => {
 
                         {/* Header — changes based on mode */}
                         <div className="login-header">
-                            <h1>{isRegister ? 'Create Account' : 'Sign In'}</h1>
-                            <p>{isRegister ? 'Join Cake Factory today' : 'Enter your details to access your account'}</p>
+                            <p>{isRegister ? 'Enter your details to Create Account' : 'Enter your details to Sign in'}</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="login-form" noValidate>
