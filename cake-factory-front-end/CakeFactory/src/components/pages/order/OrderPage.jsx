@@ -12,6 +12,11 @@ const OrderPage = () => {
 
   // Get cakeId passed via navigation state
   const cakeId = location.state?.cakeId;
+  const cartItemId = location.state?.cartItemId || null;
+  const existingData = location.state?.existingData || null;
+
+  const isEditMode = !!cartItemId;
+
   const cake = allCakes?.find((c) => c.id === cakeId) || null;
 
   if (isLoading) {
@@ -51,7 +56,13 @@ const OrderPage = () => {
           <h1 className="order-title">{cake.name}</h1>
           <p className="order-price">${cake.price}</p>
           <p className="order-description">{cake.description}</p>
-             <AddToCartForm cake={cake}/>
+             <h2>{isEditMode ? 'Edit Your Order' : 'Place Your Order'}</h2>
+                    <AddToCartForm
+                        cake={cake}
+                        cartItemId={cartItemId}
+                        existingData={existingData}
+                        onEditSuccess={() => navigate('/checkout')}
+                    />
           </div>
       </div>
     </div>
