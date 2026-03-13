@@ -9,12 +9,17 @@ export default class CartDTO {
         this.message = message;
     }
 
-    isValid() {
+    isValid(isCustomizable = true) {
         if (!this.cakeId) return false;
         if (!this.quantity || this.quantity < 1) return false;
-        if (!this.selectedSize) return false;
-        if (!this.selectedFlavour) return false;
-        if (!this.selectedFilling) return false;
+        
+        // If it's a cupcake, we skip these three checks
+        if (isCustomizable) {
+            if (!this.selectedSize) return false;
+            if (!this.selectedFlavour) return false;
+            if (!this.selectedFilling) return false;
+        }
+        
         return true;
     }
 }

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from "react-router";
 import { useData } from '../../../context/DataContext';
 import AddToCartForm from './AddToCartForm.jsx';
+import Input from '../../forms/input/Input.jsx';
 import "./order.css"; 
 
 
@@ -8,7 +10,7 @@ const OrderPage = () => {
   const navigate = useNavigate();
   const location= useLocation();
   const { allCakes, isLoading } = useData();
-
+  const [quantity, setQuantity] = useState(1);
 
   // Get cakeId passed via navigation state
   const cakeId = location.state?.cakeId;
@@ -53,12 +55,28 @@ const OrderPage = () => {
 
         {/* RIGHT DETAILS */}
         <div className="order-details">
-          <h1 className="order-title">{cake.name}</h1>
+          <h2 className="order-title">{cake.name}</h2>
           <p className="order-price">${cake.price}</p>
           <p className="order-description">{cake.description}</p>
-             <h2>{isEditMode ? 'Edit Your Order' : 'Place Your Order'}</h2>
+             <p>{isEditMode ? 'Edit Your Order' : 'Place Your Order'}</p>
+                   <div className="form-field-wrapper" style={{ marginBottom: '18px' }} >
+                        <Input 
+                          id="quantity" 
+                          label="Quantity:" 
+                          type="number"
+                          min="1"
+                          value={quantity === 0 ? '' : quantity}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            if (newValue  === ""){setQuantity(0)}
+                            else{setQuantity(parseInt(newValue,10));
+                            }}
+                          }
+                            />
+                    </div>
                     <AddToCartForm
                         cake={cake}
+                        quantity={quantity}
                         cartItemId={cartItemId}
                         existingData={existingData}
                         onEditSuccess={() => navigate('/checkout')}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState} from 'react';
 import { useNavigate } from 'react-router';
 import CartDTO from '../../../class/CartDTO.js';
 import { useData } from '../../../context/DataContext.jsx';
@@ -11,148 +11,114 @@ let errorMessages = {
     sizeRequired: 'Size is required.',
     flavourRequired: 'Flavour is required.',
     fillingRequired: 'Filling is required.',
-     quantityRequired: 'Quantity must be at least 1.',
 };
 
-const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuccess = null }) => {
+const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null, onEditSuccess = null }) => {
     const navigate = useNavigate();
     const { fetchCart, currentUser } = useData();
-
     const isEditMode = !!cartItemId;
 
     const [formData, setFormData] = useState({
         size: existingData?.selectedSize || '',
         flavour: existingData?.selectedFlavour || '',
         filling: existingData?.selectedFilling || '',
-        message: existingData?.message || '',
-        quantity: existingData?.quantity || 1,  
+        message: existingData?.message || '', 
     });
     const [hasErrors, setHasErrors] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const firstFieldRef = useRef(null);
-    useEffect(() => {
-        if (firstFieldRef.current) {
-            firstFieldRef.current.focus();
+    
+// Only require selects if customization is enabled
+    const isFormValid = () => {
+        if (cake.customization === false) {
+            return quantity >= 1;
         }
-    }, []);
-
-    const sizeOptions = cake.getParsedSizes().map((s) => ({
-        label: `${s.label} (+$${s.addPrice})`,
-        value: s.label,
-        addPrice: s.addPrice,
-    }));
-
-    const flavourOptions = cake.getParsedFlavors().map((f) => ({
-        label: f.label,
-        value: f.label,
-    }));
-
-    const fillingOptions = cake.getParsedFillings().map((f) => ({
-        label: `${f.label} (+$${f.addPrice})`,
-        value: f.label,
-        addPrice: f.addPrice,
-    }));
-
-    const canWriteMessage = cake.canWriteMessage || false;
-
-    // Add to cart( Post) 
-    const saveToCart = async (cartDTO) => {
-        try {
-            const response = await fetch('http://localhost:8080/api/cart/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cartDTO),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();  
-                throw new Error(errorText || `ERROR - Status ${response.status}`);
-            } else {
-                 await fetchCart(currentUser?.id || 1); 
-                navigate('/checkout');
-            }
-        } catch (error) {
-            console.error(error.message);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // Update cart item (Put)
-    const updateCart = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/cart/${cartItemId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    quantity: formData.quantity,           
-                    selectedSize: formData.size,
-                    selectedFlavour: formData.flavour,
-                    selectedFilling: formData.filling,
-                    message: formData.message,
-                }),
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || `ERROR - Status ${response.status}`);
-            } else {
-                await fetchCart(currentUser?.id || 1);
-                onEditSuccess?.();
-            }
-        } catch (error) {
-            console.error(error.message);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // Validate form data
-    const isValid = () => {
         return (
             formData.size &&
             formData.flavour &&
             formData.filling &&
-            formData.quantity >= 1
+            quantity >= 1
         );
     };
 
-
-    // Handle Submit 
-    const handleSubmit = (event) => {
+    // Build the payload with defaults for non-customizable items
+    const buildPayload = () => {
+        return {
+            userId: currentUser?.id || 1,
+            cakeId: cake.id,
+            quantity: quantity,
+            selectedSize: cake.customization ? formData.size : "Standard",
+            selectedFlavour: cake.customization ? formData.flavour : "Standard",
+            selectedFilling: cake.customization ? formData.filling : "None",
+            message: cake.customization ? formData.message : ""
+        };
+    };
+    // 2. Submit Logic
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if (isEditMode) {
-            if (!isValid()) {
-                setHasErrors(true);
-                setSubmitting(false);
-                return;
-            }
-            setSubmitting(true);
-            updateCart();
-        } else {
-            const cartDTO = new CartDTO(
-                currentUser?.id || 1,  // ← uses logged in user, falls back to 1 for testing
-                cake.id,
-                formData.quantity,
-                formData.size,
-                formData.flavour,
-                formData.filling,
-                formData.message
+        if (!isFormValid()) {
+            setHasErrors(true);
+            return;
+        }
+
+        setSubmitting(true);
+
+        // Map to empty strings for cupcakes to keep the DB and UI clean
+        const cartDTO = new CartDTO(
+            currentUser?.id || 1,
+            cake.id,
+            quantity,
+            cake.customization ? formData.size : "",
+            cake.customization ? formData.flavour : "",
+            cake.customization ? formData.filling : "",
+            cake.customization ? formData.message : ""
         );
 
-        if (!cartDTO.isValid()) {
+        // Pass the customization status to DTO's isValid method
+        if (!cartDTO.isValid(cake.customization)) {
+            console.error("DTO validation failed.");
             setSubmitting(false);
-            setHasErrors(true);
-        } else {
-            setSubmitting(true);
-            saveToCart(cartDTO);
+            return;
         }
-    }
+
+        try {
+            const url = isEditMode 
+                ? `http://localhost:8080/api/cart/${cartItemId}` 
+                : 'http://localhost:8080/api/cart/add';
+            
+            const method = isEditMode ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cartDTO),
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            await fetchCart(currentUser?.id || 1);
+            
+            if (isEditMode) {
+                onEditSuccess?.();
+            } else {
+                navigate('/checkout');
+            }
+        } catch (error) {
+            console.error("Cart Action Failed:", error.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
+    // Dynamic Options Mapping
+    const sizeOptions = cake.customization ? cake.getParsedSizes().map(s => ({ label: `${s.label} (+$${s.addPrice})`, value: s.label })) : [];
+    const flavourOptions = cake.customization ? cake.getParsedFlavors().map(f => ({ label: f.label, value: f.label })) : [];
+    const fillingOptions = cake.customization ? cake.getParsedFillings().map(f => ({ label: `${f.label} (+$${f.addPrice})`, value: f.label })) : [];
+
     return (
-        <form className="order-form">
+        <form className="order-form" onSubmit={handleSubmit}>
+            {/* Cupcakes (customization: false) will skip this entire block */}
             {cake.customization === true && (
                 <>
                     <div className="form-field">
@@ -162,12 +128,8 @@ const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuc
                             value={formData.size}
                             onChange={(e) => setFormData({ ...formData, size: e.target.value })}
                             options={sizeOptions}
-                            ref={firstFieldRef}
                         />
-                        <InputErrorMessage
-                            hasError={hasErrors && !formData.size}
-                            msg={errorMessages.sizeRequired}
-                        />
+                        <InputErrorMessage hasError={hasErrors && !formData.size} msg={errorMessages.sizeRequired} />
                     </div>
 
                     <div className="form-field">
@@ -178,10 +140,7 @@ const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuc
                             onChange={(e) => setFormData({ ...formData, flavour: e.target.value })}
                             options={flavourOptions}
                         />
-                        <InputErrorMessage
-                            hasError={hasErrors && !formData.flavour}
-                            msg={errorMessages.flavourRequired}
-                        />
+                        <InputErrorMessage hasError={hasErrors && !formData.flavour} msg={errorMessages.flavourRequired} />
                     </div>
 
                     <div className="form-field">
@@ -192,13 +151,10 @@ const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuc
                             onChange={(e) => setFormData({ ...formData, filling: e.target.value })}
                             options={fillingOptions}
                         />
-                        <InputErrorMessage
-                            hasError={hasErrors && !formData.filling}
-                            msg={errorMessages.fillingRequired}
-                        />
+                        <InputErrorMessage hasError={hasErrors && !formData.filling} msg={errorMessages.fillingRequired} />
                     </div>
 
-                    {canWriteMessage && (
+                    {cake.canWriteMessage && (
                         <div className="form-field">
                             <Input
                                 id="message"
@@ -211,14 +167,14 @@ const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuc
                 </>
             )}
 
-            <div>
+            <div style={{ marginTop: '20px' }}>
                 <Button
-                    label={submitting
-                        ? (isEditMode ? 'Updating...' : 'Adding...')
+                    label={submitting 
+                        ? (isEditMode ? 'Updating...' : 'Adding...') 
                         : (isEditMode ? 'Update Cart' : 'Add to Cart')
                     }
-                    onClick={handleSubmit}
-                    disabled={submitting}
+                    type="submit"
+                    disabled={submitting || quantity < 1}
                 />
             </div>
         </form>

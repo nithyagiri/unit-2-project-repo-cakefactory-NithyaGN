@@ -74,7 +74,7 @@ const ShopPage = () => {
           </label>
           <select
             id="category-filter"
-            className="shop-filter-select"
+            className="shop-filter-select-Input"
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
           >
@@ -92,7 +92,7 @@ const ShopPage = () => {
           <input
             id="min-price"
             type="number"
-            className="shop-filter-input"
+            className="shop-filter-select-Input"
             placeholder={`e.g. ${lowestPrice}`}
             value={minPrice}
             min={0}
@@ -108,7 +108,7 @@ const ShopPage = () => {
           <input
             id="max-price"
             type="number"
-            className="shop-filter-input"
+            className="shop-filter-select-Input"
             placeholder={`e.g. ${highestPrice}`}
             value={maxPrice}
             min={0}
@@ -118,7 +118,7 @@ const ShopPage = () => {
 
         {/* Clear filters */}
         {hasActiveFilters && (
-          <button className="shop-filter-clear" onClick={clearFilters}>
+          <button onClick={clearFilters}>
             ✕ Clear Filters
           </button>
         )}
