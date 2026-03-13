@@ -11,17 +11,21 @@ let errorMessages = {
     sizeRequired: 'Size is required.',
     flavourRequired: 'Flavour is required.',
     fillingRequired: 'Filling is required.',
+     quantityRequired: 'Quantity must be at least 1.',
 };
 
-const AddToCartForm = ({ cake }) => {
+const AddToCartForm = ({ cake, cartItemId = null, existingData = null, onEditSuccess = null }) => {
     const navigate = useNavigate();
-    const { fetchCart, currentUser } = useData();  // ← add currentUser
+    const { fetchCart, currentUser } = useData();
+
+    const isEditMode = !!cartItemId;
 
     const [formData, setFormData] = useState({
-        size: '',
-        flavour: '',
-        filling: '',
-        message: '',
+        size: existingData?.selectedSize || '',
+        flavour: existingData?.selectedFlavour || '',
+        filling: existingData?.selectedFilling || '',
+        message: existingData?.message || '',
+        quantity: existingData?.quantity || 1,  
     });
     const [hasErrors, setHasErrors] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -52,7 +56,7 @@ const AddToCartForm = ({ cake }) => {
 
     const canWriteMessage = cake.canWriteMessage || false;
 
-    // ── Save to backend ──
+    // Add to cart( Post) 
     const saveToCart = async (cartDTO) => {
         try {
             const response = await fetch('http://localhost:8080/api/cart/add', {
@@ -60,12 +64,9 @@ const AddToCartForm = ({ cake }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(cartDTO),
             });
-            const responseText = await response.text();
-        console.log("Status:", response.status);
-        console.log("Backend response:", responseText);  // ← shows ex
 
             if (!response.ok) {
-                const errorText = await response.text();  // ← fix: text() not json()
+                const errorText = await response.text();  
                 throw new Error(errorText || `ERROR - Status ${response.status}`);
             } else {
                  await fetchCart(currentUser?.id || 1); 
@@ -78,21 +79,67 @@ const AddToCartForm = ({ cake }) => {
         }
     };
 
-    // ── Handle Submit ──
+    // Update cart item (Put)
+    const updateCart = async () => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/cart/${cartItemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    quantity: formData.quantity,           
+                    selectedSize: formData.size,
+                    selectedFlavour: formData.flavour,
+                    selectedFilling: formData.filling,
+                    message: formData.message,
+                }),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `ERROR - Status ${response.status}`);
+            } else {
+                await fetchCart(currentUser?.id || 1);
+                onEditSuccess?.();
+            }
+        } catch (error) {
+            console.error(error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Validate form data
+    const isValid = () => {
+        return (
+            formData.size &&
+            formData.flavour &&
+            formData.filling &&
+            formData.quantity >= 1
+        );
+    };
+
+
+    // Handle Submit 
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        const cartDTO = new CartDTO(
-            currentUser?.id || 1,  // ← uses logged in user, falls back to 1 for testing
-            cake.id,
-            1,
-            formData.size,
-            formData.flavour,
-            formData.filling,
-            formData.message
+        if (isEditMode) {
+            if (!isValid()) {
+                setHasErrors(true);
+                setSubmitting(false);
+                return;
+            }
+            setSubmitting(true);
+            updateCart();
+        } else {
+            const cartDTO = new CartDTO(
+                currentUser?.id || 1,  // ← uses logged in user, falls back to 1 for testing
+                cake.id,
+                formData.quantity,
+                formData.size,
+                formData.flavour,
+                formData.filling,
+                formData.message
         );
-
-        console.log("CartDTO being sent:", JSON.stringify(cartDTO));
 
         if (!cartDTO.isValid()) {
             setSubmitting(false);
@@ -101,6 +148,7 @@ const AddToCartForm = ({ cake }) => {
             setSubmitting(true);
             saveToCart(cartDTO);
         }
+    }
     };
 
     return (
@@ -165,7 +213,10 @@ const AddToCartForm = ({ cake }) => {
 
             <div>
                 <Button
-                    label={submitting ? 'Adding...' : 'Add to Cart'}
+                    label={submitting
+                        ? (isEditMode ? 'Updating...' : 'Adding...')
+                        : (isEditMode ? 'Update Cart' : 'Add to Cart')
+                    }
                     onClick={handleSubmit}
                     disabled={submitting}
                 />
