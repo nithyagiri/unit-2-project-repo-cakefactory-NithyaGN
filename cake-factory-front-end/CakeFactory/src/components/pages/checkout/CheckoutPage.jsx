@@ -8,17 +8,29 @@ const CheckoutPage = ({ setOrderTotal }) => {
     const navigate = useNavigate();
     const { cartItems, grandTotal, fetchCart, currentUser } = useData();
 
-    // ← add this — fetch cart when page loads
+    // fetch cart when page loads
     useEffect(() => {
         fetchCart(currentUser?.id || 1);  // ← fallback to 1 for testing
     }, []);
 
-    // ── Edit a cart item ──
+     // Edit a cart item
     const handleEdit = (item) => {
-        navigate('/order', { state: { cakeId: item.cakeId } });
+        navigate('/order', {
+            state: {
+                cakeId: item.cakeId,
+                cartItemId: item.id,
+                existingData: {
+                    selectedSize: item.selectedSize,
+                    selectedFlavour: item.selectedFlavour,
+                    selectedFilling: item.selectedFilling,
+                    quantity: item.quantity,
+                    message: item.message,
+                },
+            },
+        });
     };
 
-    // ── Delete a cart item (actual fetch) ──
+    // Delete a cart item
     const deleteCartItem = async (cartItemId) => {
         try {
             const response = await fetch(`http://localhost:8080/api/cart/${cartItemId}`, {
@@ -35,10 +47,10 @@ const CheckoutPage = ({ setOrderTotal }) => {
         }
     };
 
-    // ── Delete with confirm dialog ──
+    // Delete with confirm dialog
     const handleDelete = (id) => {
         let confirmed = confirm(`
-            Are you sure you want to delete this item from your cart?
+            Are you sure to delete this item from your cart?
             
             Cake: ${cartItems.find((c) => c.id === id)?.cakeName}
         `);
@@ -47,7 +59,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
         }
     };
     
-    // ── Checkout ──
+    // Checkout the cart
     const handleCheckout = async () => {
         try {
             const response = await fetch(`http://localhost:8080/api/cart/checkout/${currentUser?.id || 1}`, {
@@ -66,6 +78,16 @@ const CheckoutPage = ({ setOrderTotal }) => {
         }
     };
 
+    // ── Build JSX ──
+    const cartItemsJSX = cartItems.map((item) => (
+        <CheckoutCard
+            key={item.id}
+            item={item}
+            handleEdit={() => handleEdit(item)}
+            handleDelete={() => handleDelete(item.id)}
+        />
+    ));
+
     return (
         <div className="checkout-container">
             <div className="checkout-lft">
@@ -78,14 +100,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
                 {cartItems.length === 0 ? (
                     <p>Your Cart is empty.</p>
                 ) : (
-                    cartItems.map((item) => (
-                        <CheckoutCard
-                            key={item.id}
-                            item={item}
-                            handleEdit={handleEdit}
-                            handleDelete={handleDelete}
-                        />
-                    ))
+                    cartItemsJSX
                 )}
             </div>
 
