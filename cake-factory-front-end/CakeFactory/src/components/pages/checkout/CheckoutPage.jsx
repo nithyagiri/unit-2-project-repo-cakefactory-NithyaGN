@@ -18,15 +18,14 @@ const CheckoutPage = ({ setOrderTotal }) => {
         navigate('/order', { state: { cakeId: item.cakeId } });
     };
 
-    // ── Delete a cart item ──
-    const handleDelete = async (cartItemId) => {
+    // ── Delete a cart item (actual fetch) ──
+    const deleteCartItem = async (cartItemId) => {
         try {
             const response = await fetch(`http://localhost:8080/api/cart/${cartItemId}`, {
                 method: 'DELETE',
             });
-
             if (!response.ok) {
-                const errorText = await response.text();  // ← fix: text() not json()
+                const errorText = await response.text();
                 throw new Error(errorText || `ERROR - Status ${response.status}`);
             } else {
                 fetchCart(currentUser?.id || 1);
@@ -36,6 +35,18 @@ const CheckoutPage = ({ setOrderTotal }) => {
         }
     };
 
+    // ── Delete with confirm dialog ──
+    const handleDelete = (id) => {
+        let confirmed = confirm(`
+            Are you sure you want to delete this item from your cart?
+            
+            Cake: ${cartItems.find((c) => c.id === id)?.cakeName}
+        `);
+        if (confirmed) {
+            deleteCartItem(id);
+        }
+    };
+    
     // ── Checkout ──
     const handleCheckout = async () => {
         try {
