@@ -1,0 +1,11 @@
+@import url('./App.css'); 
+@import url('./components/common/common.css');
+@import url('./components/layout/layout.css');
+@import url('./components/pages/home/home.css');
+@import url('./components/pages/cakes/shop.css');
+@import url('./components/pages/order/order.css');
+@import url('./components/pages/checkout/checkout.css');
+@import url('./components/pages/payment/payment.css');
+@import url('./components/pages/contact/contact.css');
+
+

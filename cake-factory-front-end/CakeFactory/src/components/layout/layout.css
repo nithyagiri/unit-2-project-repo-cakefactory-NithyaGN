@@ -1,0 +1,29 @@
+#cake {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.5rem;
+    font-weight: 300; 
+    margin:0;
+    padding:0;       
+} 
+.nav-menu {
+  display: flex;
+  flex-direction:column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 0;
+
+}
+.link:link,
+.link:visited{
+    color:rgba(92, 5, 5, 0.86);
+    font-size:0.9rem;
+    font-weight:400;
+    text-decoration:none;
+}
+.link:hover {
+    color: #ff4081;
+    transform: scale(1.05);
+    text-decoration: underline;
+    cursor: pointer;
+}

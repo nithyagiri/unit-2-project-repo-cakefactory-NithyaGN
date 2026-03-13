@@ -1,0 +1,202 @@
+html{
+     font-size: clamp(18px,2vw, 20px);
+     height: 100vh;
+     box-sizing:border-box;
+}
+*,
+*:before,
+*:after{
+    box-sizing: inherit;
+}
+
+body{
+    background-color: whitesmoke;
+    color: #1e323c;
+    font-family:'Poppins', sans-serif;
+    min-height: 100vh;
+    margin:0;
+    padding:0;
+    overflow-x:hidden;
+}
+body::before{
+    background-image:url('https://i.ibb.co/QFkgqFwc/background.jpg');
+    background-size:cover;
+    background-repeat: no-repeat;
+    content:'';
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    opacity:0.2;
+    z-index:-1;
+}
+#body-container{
+    display:flex;
+    flex-direction:column;
+   width :100%;
+    min-height:100vh;
+}
+header,
+footer{
+     display: flex;
+     flex-direction:column;
+     align-items:center;
+     background-color: hsl(315, 78%, 82%);
+     color: rgb(14, 3, 3);
+     width:100%;
+     padding: 15px clamp( 20px,4vw,30px) 20px;
+}
+.socialMediaIcons{
+    margin-top: "10px";
+    display: "flex";
+    gap: "20px"
+}
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+    transform: scale(1); 
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1));
+    transform: scale(1.15);
+  }
+}
+
+/* Apply glowing effect to all social icons */
+.socialMediaIcons {
+  animation: glow 2s infinite ease-in-out;
+  transition: transform 0.3s;
+}
+
+/* On hover, make the glow stronger and hold scale */
+.socialMediaIcons:hover {
+  animation-play-state: paused;
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 1));
+  transform: scale(1.2);
+}
+
+main{
+    flex:1;
+}
+.main-content{
+    padding: 10px clamp(20px,4vw,30px) 20px;
+}
+strong{
+    font-weight:900;
+}
+
+h1,
+h2,
+h3,
+h4{
+    font-family: 'Dancing Script', cursive;
+}
+h1,
+h3,
+h4,
+h5,
+h6{
+    margin:12px 0 0;
+}
+
+h1{
+    color:#83062f;
+    font-size: 1.5rem;
+    font-weight:700;
+}
+h2{
+    color: white;
+    background-color:#83062f;
+    font-size: 1.1rem;
+    font-weight:200;
+    letter-spacing: 6px;
+    width:auto;
+    border-radius: 2px;
+    padding:5px 8px;
+    margin:20px 0;
+}
+h3{
+    color:#1e323c;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+h4{
+    color:#83062f;
+    font-size:1.1rem;
+}
+h5{
+    color:#83062f;
+    font-weight:700;
+    font-size:1.1rem;
+}
+h6{
+    color:#1e323c;
+    font-weight:500;
+    font-size:1rem;
+}
+p{
+    margin:6px 0;
+}
+a,
+.link-like{
+    color:#83062f;
+    font-weight:bold;
+    text-decoration:none;
+    cursor:pointer;
+}
+a:hover,
+a:active{
+    color:#83062f;
+}
+
+.link {
+   color: #e91e63;
+  cursor: pointer;
+  font-weight: 500;
+  
+}
+.common-btn {
+  background: #ff69b4;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: 0.3s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.common-btn:hover {
+  background: #d63384;
+}
+@media screen and (min-width: 600px) {
+    header{
+        
+        justify-content: space-between;
+        padding:15px clamp(20px,4vw,30px);
+    }
+     .nav-menu {
+    flex-direction: row;  
+    align-items: center;     
+    gap: 12px;               
+    padding: 10px 0;
+  }
+}
+    
+/* Desktop: 3 columns */
+@media screen and (min-width: 1024px) {
+
+}
+
+
+/* Optional: Large desktop (4 columns) */
+@media screen and (min-width: 1440px) {
+     
+}
+
+
+
