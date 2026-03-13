@@ -99,6 +99,26 @@ export const DataContextProvider = ({ children }) => {
                 setIsCartLoading(false);
             }
         };
+
+    // CLEAR CART
+    const clearCart = async (userId) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/cart/checkout/${userId}`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to checkout');
+            }
+
+            // Refresh the cart to update the grand total and items list to 0
+            await fetchCart(userId);
+            
+        } catch (error) {
+            console.error("Clear Cart Error:", error.message);
+        }
+    };
  
     // INITIAL FETCH on mount   
     useEffect(() => {
@@ -123,6 +143,7 @@ export const DataContextProvider = ({ children }) => {
         <DataContext.Provider
             value={{isLoading, allCakes, currentCakes, setCurrentCakes, fetchCakes,
                 cartItems, setCartItems, grandTotal, isCartLoading, fetchCart,
+                clearCart,
                 currentUser,setCurrentUser,
             }}>
             {children}

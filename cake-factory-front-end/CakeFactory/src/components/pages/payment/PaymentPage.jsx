@@ -1,10 +1,13 @@
 import { useState } from "react";
-import "./payment.css";
 import { useNavigate } from "react-router";
+import { useData } from "../../../context/DataContext";
+import "./payment.css";
  
 // Local state for payment form inputs
 const PaymentPage = ({ total, setCart }) => {
   const navigate = useNavigate();
+  const {clearCart, currentUser, grandTotal} = useData();
+
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -21,10 +24,10 @@ const PaymentPage = ({ total, setCart }) => {
   };
 
    // Handle payment form submission
-  const handlePayment = (e) => {
+  const handlePayment = async(e) => {
     e.preventDefault();
-
     const newErrors = {};
+
     if (!cardName.trim()) newErrors.cardName = "Card holder name is required";
     if (cardNumber.length < 16) newErrors.cardNumber = "Card number must be 16 digits";
     const expiryRegex = /^(0[1-9]|1[0-2])\/\d{2}$/;
@@ -49,7 +52,7 @@ const PaymentPage = ({ total, setCart }) => {
 
     setErrors({});
     setShowSuccess(true);
-    setCart([]);
+    await clearCart(currentUser?.id || 1);
     setTimeout(() => navigate('/'), 2000);
   };
 
