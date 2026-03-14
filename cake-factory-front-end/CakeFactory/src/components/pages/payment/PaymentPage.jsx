@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useData } from "../../../context/DataContext";
+import InputErrorMessage from '../../common/InputErrorMessage.jsx';
 import "./payment.css";
  
 // Local state for payment form inputs
@@ -51,8 +52,9 @@ const PaymentPage = ({ total, setCart }) => {
     }
 
     setErrors({});
+
+    await clearCart(currentUser?.id);
     setShowSuccess(true);
-    await clearCart(currentUser?.id || 1);
     setTimeout(() => navigate('/'), 2000);
   };
 
@@ -87,17 +89,20 @@ const PaymentPage = ({ total, setCart }) => {
         <label>Name on Card</label>
         <input
           value={cardName}
-          onChange={(e) => setCardName(e.target.value)}
+          maxLength="25"
+           onChange={(e) => setCardName(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
+          autoComplete="cc-name"
         />
-        {errors.cardName && <div className="error">{errors.cardName}</div>}
+        <InputErrorMessage hasError={!!errors.cardName} msg={errors.cardName} />
 
         <label>Card Number</label>
         <input
           maxLength="16"
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ""))}
+          autoComplete="cc-number"
         />
-        {errors.cardNumber && <div className="error">{errors.cardNumber}</div>}
+        <InputErrorMessage hasError={!!errors.cardNumber} msg={errors.cardNumber} />
 
         <div className="row">
           <div className="col">
@@ -107,8 +112,9 @@ const PaymentPage = ({ total, setCart }) => {
               maxLength="5"
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
+              autoComplete="cc-exp"
             />
-            {errors.expiry && <div className="error">{errors.expiry}</div>}
+            <InputErrorMessage hasError={!!errors.expiry} msg={errors.expiry} />
           </div>
 
           <div className="col">
@@ -118,8 +124,9 @@ const PaymentPage = ({ total, setCart }) => {
               maxLength="3"
               value={cvv}
               onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
+              autoComplete="cc-csc"
             />
-            {errors.cvv && <div className="error">{errors.cvv}</div>}
+            <InputErrorMessage hasError={!!errors.cvv} msg={errors.cvv} />
           </div>
         </div>
 

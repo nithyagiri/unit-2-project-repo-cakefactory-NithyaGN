@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Routes, Route } from 'react-router';
+import {useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router';
 import Header from './components/layout/Header.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ShopPage from './components/pages/cakes/ShopPage.jsx';
@@ -9,11 +9,11 @@ import LoginPage from './components/pages/login/Login.jsx';
 import OrderPage from './components/pages/order/OrderPage.jsx';
 import CheckoutPage from './components/pages/checkout/CheckoutPage.jsx';
 import PaymentPage from './components/pages/payment/PaymentPage.jsx';
-import { DataContextProvider } from './context/DataContext.jsx';
+import { DataContextProvider, useData } from './context/DataContext.jsx';
 
 function App() {
-  const [orderTotal, setOrderTotal] = useState(0);  // ← keep only this
-
+  const {currentUser}= useData(); 
+  const [orderTotal, setOrderTotal] = useState(0);  
   return (
     <div id="body-container">
       <Header />
@@ -21,11 +21,11 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
-          <Route path="/order" element={<OrderPage />} />
+           <Route path="/login" element={<LoginPage />} />
+          <Route path="/order" element={currentUser ? <OrderPage /> : <Navigate to="/login" />} />
           <Route path="/checkout" element={<CheckoutPage setOrderTotal={setOrderTotal} />} />
           <Route path="/payment" element={<PaymentPage total={orderTotal} />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
       <Footer />

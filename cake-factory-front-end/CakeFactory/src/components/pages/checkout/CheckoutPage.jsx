@@ -10,7 +10,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
 
     // fetch cart when page loads
     useEffect(() => {
-        fetchCart(currentUser?.id || 1);  // ← fallback to 1 for testing
+        fetchCart(currentUser?.id);  // ← fallback to 1 for testing
     }, []);
 
      // Edit a cart item
@@ -40,7 +40,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
                 const errorText = await response.text();
                 throw new Error(errorText || `ERROR - Status ${response.status}`);
             } else {
-                fetchCart(currentUser?.id || 1);
+                fetchCart(currentUser?.id);
             }
         } catch (error) {
             console.error(error.message);
@@ -61,21 +61,8 @@ const CheckoutPage = ({ setOrderTotal }) => {
     
     // Checkout the cart
     const handleCheckout = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/cart/checkout/${currentUser?.id || 1}`, {
-                method: 'POST',
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();  // ← fix: text() not json()
-                throw new Error(errorText || `ERROR - Status ${response.status}`);
-            } else {
                 setOrderTotal(grandTotal);
                 navigate('/payment');
-            }
-        } catch (error) {
-            console.error(error.message);
-        }
     };
 
     // ── Build JSX ──

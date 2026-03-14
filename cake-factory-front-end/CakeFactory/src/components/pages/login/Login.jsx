@@ -4,11 +4,12 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import UserDTO from '../../../class/UserDTO.js';
 import User from '../../../class/User.js';
 import { useData } from '../../../context/DataContext.jsx';
+import InputErrorMessage from '../../common/InputErrorMessage.jsx';
 import "./login.css";
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const { setCurrentUser } = useData();
+    const { setCurrentUser, currentUser } = useData();
 
     const [isRegister, setIsRegister] = useState(false);  
 
@@ -25,6 +26,12 @@ const LoginPage = () => {
     const [serverError, setServerError] = useState('');
 
     const firstFieldRef = useRef(null);
+    
+    useEffect(() => {
+        if (currentUser) {
+            navigate('/');
+        }
+    }, [currentUser]);
 
     useEffect(() => {
         firstFieldRef.current?.focus();
@@ -167,7 +174,7 @@ const LoginPage = () => {
                                             ref={firstFieldRef}
                                         />
                                     </div>
-                                    {errors.name && <span className="error-msg">{errors.name}</span>}
+                                    <InputErrorMessage hasError={!!errors.name} msg={errors.name} />
                                 </div>
                             )}
 
@@ -186,7 +193,7 @@ const LoginPage = () => {
                                         ref={!isRegister ? firstFieldRef : null}
                                     />
                                 </div>
-                                {errors.email && <span className="error-msg">{errors.email}</span>}
+                                <InputErrorMessage hasError={!!errors.email} msg={errors.email} />
                             </div>
 
                             {/* Password */}
@@ -211,7 +218,7 @@ const LoginPage = () => {
                                         {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                                     </button>
                                 </div>
-                                {errors.password && <span className="error-msg">{errors.password}</span>}
+                                <InputErrorMessage hasError={!!errors.password} msg={errors.password} />
                             </div>
 
                             {/* Confirm Password — only shown for register */}
@@ -236,14 +243,12 @@ const LoginPage = () => {
                                             {showConfirmPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                                         </button>
                                     </div>
-                                    {errors.confirmPassword && <span className="error-msg">{errors.confirmPassword}</span>}
+                                    <InputErrorMessage hasError={!!errors.confirmPassword} msg={errors.confirmPassword} />
                                 </div>
                             )}
 
                             {/* Server error */}
-                            {serverError && (
-                                <p className="error-msg">{serverError}</p>
-                            )}
+                            <InputErrorMessage hasError={!!serverError} msg={serverError} />
 
                             {/* Submit */}
                             <button

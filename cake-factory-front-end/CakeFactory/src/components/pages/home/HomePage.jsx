@@ -9,7 +9,7 @@ const HomePage = () => {
     const [surpriseCake, setSurpriseCake] = useState(null);
 
     // use real cake data from DataContext
-    const { allCakes, isLoading } = useData();
+    const { allCakes, isLoading, currentUser } = useData();
 
     const navigate = useNavigate();
 
@@ -30,7 +30,11 @@ const HomePage = () => {
 
     const goToOrder = () => {
         setIsSpinning(false);
-        navigate('/order', { state: { cakeId: surpriseCake.id } }); {/* ← pass cakeId via state */}
+        if(!currentUser){
+            navigate('/login')
+        }else{
+        navigate('/order', { state: { cakeId: surpriseCake.id } });
+        }
 };
 
     return (
@@ -92,7 +96,7 @@ const HomePage = () => {
                             <h3>{surpriseCake.name}</h3>
                             <p>{surpriseCake.getFormattedPrice()}</p>              
                             <button className="common-btn" onClick={goToOrder}>
-                                Order Now
+                                {currentUser ? 'Order Now' : 'Login to Order'}
                             </button>
                         </div>
                     )}

@@ -3,7 +3,6 @@ export default class UserDTO {
         this.name = name;
         this.email = email;
         this.password = password;
-        // no id — backend generates it
     }
 
     // Validate register form
