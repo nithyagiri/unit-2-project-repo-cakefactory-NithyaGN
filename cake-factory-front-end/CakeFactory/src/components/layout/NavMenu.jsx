@@ -14,7 +14,7 @@ const NavMenu =() =>{
             <Link className="link" to ="/shop">Shop</Link>
             <Link className="link" to ="/contact">Contact</Link> 
             {currentUser ? (
-                <Link className="link" onClick={handleLogout}>Logout</Link>) : ( 
+                <Link className="link" to ="/"onClick={handleLogout}>Logout</Link>) : ( 
                 <Link className="link" to ="/Login">Login</Link> )
             }
         </div> 

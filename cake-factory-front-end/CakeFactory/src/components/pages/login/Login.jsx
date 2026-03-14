@@ -29,7 +29,7 @@ const LoginPage = () => {
     
     useEffect(() => {
         if (currentUser) {
-            navigate('/shop');
+            navigate('/');
         }
     }, [currentUser]);
 
