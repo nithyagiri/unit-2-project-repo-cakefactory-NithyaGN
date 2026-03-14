@@ -174,17 +174,32 @@ a:active{
   background: #d63384;
 }
 @media screen and (min-width: 600px) {
-    header{
-        
+    header{ 
         justify-content: space-between;
         padding:15px clamp(20px,4vw,30px);
     }
-     .nav-menu {
-    flex-direction: row;  
-    align-items: center;     
-    gap: 12px;               
-    padding: 10px 0;
-  }
+     .nav-bar {
+        display: flex;
+        flex-direction: row;  
+        align-items: center;     
+        width: 100%;
+        padding: 0 20px;
+        position: relative;
+         margin-top: 10px
+    }
+    .nav-menu {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .nav-user {
+        margin-left: auto;
+    }
+  
 }
     
 /* Desktop: 3 columns */

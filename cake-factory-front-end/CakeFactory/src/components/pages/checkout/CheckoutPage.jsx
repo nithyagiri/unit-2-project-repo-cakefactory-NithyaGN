@@ -61,21 +61,8 @@ const CheckoutPage = ({ setOrderTotal }) => {
     
     // Checkout the cart
     const handleCheckout = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/api/cart/checkout/${currentUser?.id || 1}`, {
-                method: 'POST',
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();  // ← fix: text() not json()
-                throw new Error(errorText || `ERROR - Status ${response.status}`);
-            } else {
                 setOrderTotal(grandTotal);
                 navigate('/payment');
-            }
-        } catch (error) {
-            console.error(error.message);
-        }
     };
 
     // ── Build JSX ──
