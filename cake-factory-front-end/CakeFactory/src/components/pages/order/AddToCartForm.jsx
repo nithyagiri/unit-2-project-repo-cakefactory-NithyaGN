@@ -44,7 +44,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
     // Build the payload with defaults for non-customizable items
     const buildPayload = () => {
         return {
-            userId: currentUser?.id || 1,
+            userId: currentUser?.id,
             cakeId: cake.id,
             quantity: quantity,
             selectedSize: cake.customization ? formData.size : "Standard",
@@ -53,7 +53,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
             message: cake.customization ? formData.message : ""
         };
     };
-    // 2. Submit Logic
+    //Submit Logic
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -66,7 +66,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
 
         // Map to empty strings for cupcakes to keep the DB and UI clean
         const cartDTO = new CartDTO(
-            currentUser?.id || 1,
+            currentUser?.id,
             cake.id,
             quantity,
             cake.customization ? formData.size : "",
@@ -97,7 +97,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
 
             if (!response.ok) throw new Error(await response.text());
 
-            await fetchCart(currentUser?.id || 1);
+            await fetchCart(currentUser?.id);
             
             if (isEditMode) {
                 onEditSuccess?.();
