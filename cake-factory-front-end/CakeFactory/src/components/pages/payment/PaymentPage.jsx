@@ -52,7 +52,7 @@ const PaymentPage = ({ total, setCart }) => {
 
     setErrors({});
     setShowSuccess(true);
-    await clearCart(currentUser?.id || 1);
+    await clearCart(currentUser?.id);
     setTimeout(() => navigate('/'), 2000);
   };
 
@@ -88,6 +88,7 @@ const PaymentPage = ({ total, setCart }) => {
         <input
           value={cardName}
           onChange={(e) => setCardName(e.target.value)}
+          autoComplete="cc-name"
         />
         {errors.cardName && <div className="error">{errors.cardName}</div>}
 
@@ -96,6 +97,7 @@ const PaymentPage = ({ total, setCart }) => {
           maxLength="16"
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ""))}
+          autoComplete="cc-number"
         />
         {errors.cardNumber && <div className="error">{errors.cardNumber}</div>}
 
@@ -107,6 +109,7 @@ const PaymentPage = ({ total, setCart }) => {
               maxLength="5"
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
+              autoComplete="cc-exp"
             />
             {errors.expiry && <div className="error">{errors.expiry}</div>}
           </div>
@@ -118,6 +121,7 @@ const PaymentPage = ({ total, setCart }) => {
               maxLength="3"
               value={cvv}
               onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
+              autoComplete="cc-csc"
             />
             {errors.cvv && <div className="error">{errors.cvv}</div>}
           </div>

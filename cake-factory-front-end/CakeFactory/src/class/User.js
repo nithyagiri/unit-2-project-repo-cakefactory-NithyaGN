@@ -3,7 +3,6 @@ export default class User {
         this.id = id;
         this.name = name;
         this.email = email;
-        // no password — never sent to frontend for security
     }
 
     
