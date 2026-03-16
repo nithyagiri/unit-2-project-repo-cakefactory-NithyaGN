@@ -6,9 +6,10 @@ export const DataContext = createContext();
 
 export const DataContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
-    //User state
-    const [currentUser, setCurrentUser] = useState(null);
 
+    // User state 
+    const [currentUser, setCurrentUser] = useState(null);
+    
     // Cake states
     const [allCakes, setAllCakes] = useState(null);
     const [currentCakes, setCurrentCakes] = useState(null);
@@ -21,13 +22,14 @@ export const DataContextProvider = ({ children }) => {
     
     // FETCH ALL CAKES
     const fetchCakes = async () => {
+        setIsLoading(true);
         const cakes = [];
         try{
             const response = await fetch("http://localhost:8080/api/cakes");
     
             if (!response.ok) {
                 const errorData= await response.json();
-                throw new Error(errorData.message || 'ERROR - Status ${response.status}');
+                throw new Error(errorData.message || `ERROR - Status ${response.status}`);
             }else{
                 const data = await response.json();
         
@@ -47,17 +49,18 @@ export const DataContextProvider = ({ children }) => {
                     );
                     cakes.push(newCake);
                 });
+                setAllCakes(cakes);
+                setCurrentCakes(cakes);
             }   
             } catch (error) {
                 console.error(error.message);
-            } finally {
-                setAllCakes(cakes);
-                setCurrentCakes(cakes);
+                  setIsLoading(false);
             }
          };
     
     // FETCH CART CAKES
     const fetchCart = async (userId) => {
+        if (!userId) return;
         setIsCartLoading(true);
         const carts = [];
         try{
@@ -66,11 +69,8 @@ export const DataContextProvider = ({ children }) => {
             if (!response.ok) {
                 setCartItems([]);
                 setGrandTotal(0);
-                const errorData= await response.json();
-                throw new Error(errorData.message || 'ERROR - Status ${response.status}');
             }else{
                 const data = await response.json();
-        
                 data.cartItems.forEach(item => {
                 let newCart = new Cart(
                     item.id,
@@ -111,26 +111,30 @@ export const DataContextProvider = ({ children }) => {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to checkout');
             }
-
-            // Refresh the cart to update the grand total and items list to 0
-            await fetchCart(userId);
+            setCartItems([]);
+            setGrandTotal(0);
             
         } catch (error) {
             console.error("Clear Cart Error:", error.message);
+            throw error;
         }
     };
  
     // INITIAL FETCH on mount   
     useEffect(() => {
         fetchCakes();
-        //fetchCart();
     }, []);
-
+    
+    // Fetch cart whenever the logged-in user changes
     useEffect(() => {
     if (currentUser?.id) {
         fetchCart(currentUser.id);
-    }
-}, [currentUser]);
+    }else {
+            // User logged out — clear cart state
+            setCartItems([]);
+            setGrandTotal(0);
+        }
+}, [currentUser?.id]);
 
     // SET LOADING FALSE when cakes are loaded
     useEffect(() => {
@@ -141,7 +145,9 @@ export const DataContextProvider = ({ children }) => {
 
     return (
         <DataContext.Provider
-            value={{isLoading, allCakes, currentCakes, setCurrentCakes, fetchCakes,
+            value={{
+                isLoading, 
+                allCakes, currentCakes, setCurrentCakes, fetchCakes,
                 cartItems, setCartItems, grandTotal, isCartLoading, fetchCart,
                 clearCart,
                 currentUser,setCurrentUser,

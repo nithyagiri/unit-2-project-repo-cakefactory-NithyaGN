@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import HomeImage from '../../../images/Home.jpeg';
 import { useData } from '../../../context/DataContext';
@@ -31,7 +31,10 @@ const HomePage = () => {
     const goToOrder = () => {
         setIsSpinning(false);
         if(!currentUser){
-            navigate('/login')
+             // Saving destination and cakeId so Login can redirect back after login
+            navigate('/login', {
+                state: { redirectTo: '/order', cakeId: surpriseCake.id }
+            });
         }else{
         navigate('/order', { state: { cakeId: surpriseCake.id } });
         }

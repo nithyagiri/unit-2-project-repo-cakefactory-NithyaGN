@@ -1,6 +1,6 @@
 const CheckoutCard = ({ item, handleEdit, handleDelete }) => {
     return (
-        <div className="checkout-card" key={item.id}>
+        <div className="checkout-card">
             <img
                 src={item.getImageURL()}
                 className="checkout-img"

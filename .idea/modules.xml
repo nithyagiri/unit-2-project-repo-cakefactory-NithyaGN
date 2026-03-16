@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/cake-factory-back-end/cake-factory-back-end/cake-factory-back-end.iml" filepath="$PROJECT_DIR$/cake-factory-back-end/cake-factory-back-end/cake-factory-back-end.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/unit-2-project-repo-cakefactory-NithyaGN.iml" filepath="$PROJECT_DIR$/.idea/unit-2-project-repo-cakefactory-NithyaGN.iml" />
     </modules>
   </component>

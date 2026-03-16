@@ -5,7 +5,7 @@ import InputErrorMessage from '../../common/InputErrorMessage.jsx';
 import "./payment.css";
  
 // Local state for payment form inputs
-const PaymentPage = ({ total, setCart }) => {
+const PaymentPage = () => {
   const navigate = useNavigate();
   const {clearCart, currentUser, grandTotal} = useData();
 
@@ -15,6 +15,7 @@ const PaymentPage = ({ total, setCart }) => {
   const [cvv, setCvv] = useState("");
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
+   const [submitError, setSubmitError] = useState("");
   
    // Determine card brand based on starting digit
   const getCardBrand = () => {
@@ -52,10 +53,20 @@ const PaymentPage = ({ total, setCart }) => {
     }
 
     setErrors({});
+    setSubmitError("");
 
-    await clearCart(currentUser?.id);
-    setShowSuccess(true);
-    setTimeout(() => navigate('/'), 2000);
+    // Missing user is handled before calling clearCart
+    if (!currentUser?.id) {
+      setSubmitError("You must be logged in to complete payment.");
+      return;
+    }
+    try {
+      await clearCart(currentUser.id);
+      setShowSuccess(true);
+      setTimeout(() => navigate('/'), 2000);
+    } catch (err) {
+      setSubmitError("Payment could not be completed. Please try again.");
+    }
   };
 
   return (
@@ -129,8 +140,8 @@ const PaymentPage = ({ total, setCart }) => {
             <InputErrorMessage hasError={!!errors.cvv} msg={errors.cvv} />
           </div>
         </div>
-
-         <h3><center>Total: ${total}</center></h3>
+        
+         <h3><center>Total: ${grandTotal != null ? Number(grandTotal).toFixed(2) : "0.00"}</center></h3>
         <button type="submit" className="common-btn">Pay Now</button>
       </form>
 

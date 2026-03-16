@@ -26,6 +26,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
     });
     const [hasErrors, setHasErrors] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     
 // Only require selects if customization is enabled
@@ -41,21 +42,14 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
         );
     };
 
-    // Build the payload with defaults for non-customizable items
-    const buildPayload = () => {
-        return {
-            userId: currentUser?.id,
-            cakeId: cake.id,
-            quantity: quantity,
-            selectedSize: cake.customization ? formData.size : "Standard",
-            selectedFlavour: cake.customization ? formData.flavour : "Standard",
-            selectedFilling: cake.customization ? formData.filling : "None",
-            message: cake.customization ? formData.message : ""
-        };
-    };
-    //Submit Logic
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        //Making sure the user is loggedin
+        if (!currentUser?.id) {
+            setSubmitError('You must be logged in to add items to your cart.');
+            return;
+        }
 
         if (!isFormValid()) {
             setHasErrors(true);
@@ -77,7 +71,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
 
         // Pass the customization status to DTO's isValid method
         if (!cartDTO.isValid(cake.customization)) {
-            console.error("DTO validation failed.");
+            setSubmitError('Please fill in all required fields.');
             setSubmitting(false);
             return;
         }
@@ -105,7 +99,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
                 navigate('/checkout');
             }
         } catch (error) {
-            console.error("Cart Action Failed:", error.message);
+            setSubmitError(error.message || 'Something went wrong. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -168,6 +162,7 @@ const AddToCartForm = ({ cake, quantity, cartItemId = null, existingData = null,
             )}
 
             <div style={{ marginTop: '20px' }}>
+                <InputErrorMessage hasError={!!submitError} msg={submitError} />
                 <Button
                     label={submitting 
                         ? (isEditMode ? 'Updating...' : 'Adding...') 

@@ -4,14 +4,16 @@ import { useData } from '../../../context/DataContext.jsx';
 import CheckoutCard from "./CheckoutCard";
 import "./checkout.css";
 
-const CheckoutPage = ({ setOrderTotal }) => {
+const CheckoutPage = () => {
     const navigate = useNavigate();
     const { cartItems, grandTotal, fetchCart, currentUser } = useData();
 
     // fetch cart when page loads
     useEffect(() => {
-        fetchCart(currentUser?.id);  // ← fallback to 1 for testing
-    }, []);
+         if (currentUser?.id) {
+        fetchCart(currentUser?.id);  
+         }
+    }, [currentUser]);  
 
      // Edit a cart item
     const handleEdit = (item) => {
@@ -60,8 +62,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
     };
     
     // Checkout the cart
-    const handleCheckout = async () => {
-                setOrderTotal(grandTotal);
+    const handleCheckout = () => {
                 navigate('/payment');
     };
 
@@ -93,7 +94,7 @@ const CheckoutPage = ({ setOrderTotal }) => {
 
             <div className="checkout-summary">
                 <h2>Order Summary</h2>
-                <p><b>Order Total:</b> ${grandTotal}</p>
+                <p><b>Order Total:</b> ${grandTotal != null ? Number(grandTotal).toFixed(2) : "0.00"}</p>
                 <button
                     className="common-btn"
                     disabled={cartItems.length === 0}

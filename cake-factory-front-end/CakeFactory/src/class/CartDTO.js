@@ -13,7 +13,6 @@ export default class CartDTO {
         if (!this.cakeId) return false;
         if (!this.quantity || this.quantity < 1) return false;
         
-        // If it's a cupcake, we skip these three checks
         if (isCustomizable) {
             if (!this.selectedSize) return false;
             if (!this.selectedFlavour) return false;

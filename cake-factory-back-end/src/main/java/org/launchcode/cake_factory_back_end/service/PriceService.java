@@ -39,7 +39,7 @@ public class PriceService {
                     .orElse(0.0);
 
         } catch (Exception e) {
-            // Log the error (e.g., malformed JSON)
+            // Log the error
             return 0.0;
         }
     }

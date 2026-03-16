@@ -67,7 +67,7 @@ public class Cake {
         this.price = price;
         this.customization = customization;
         this.category = category;
-        this.image_id = image_id;
+        this.image_id = imagePath;
         this.sizes = sizes;
         this.flavors = flavors;
         this.fillings = fillings;

@@ -27,11 +27,23 @@ export default class Cart {
         this.status = status;
     }
 
-    isInCart() { return this.status === "IN_CART"; }
-    isConfirmed() { return this.status === "CONFIRMED"; }
-    isCancelled() { return this.status === "CANCELLED"; }
-    getFormattedPrice() { return `$${this.price.toFixed(2)}`; }
-    getImageURL() { return "https://i.ibb.co/" + this.cakeImage; }
+    isInCart() { 
+        return this.status === "IN_CART"; 
+    }
+    isConfirmed() {
+         return this.status === "CONFIRMED"; 
+        }
+    isCancelled() { 
+        return this.status === "CANCELLED"; 
+    }
+    getFormattedPrice() {
+        if (this.price == null || this.price === undefined) return "$0.00";
+        return `$${Number(this.price).toFixed(2)}`;
+    }
+    getImageURL() {
+        if (!this.cakeImage) return "";
+        return "https://i.ibb.co/" + this.cakeImage;
+    }
     getSummary() {
         const parts = [];
         if (this.selectedSize) parts.push(`Size: ${this.selectedSize}`);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import UserDTO from '../../../class/UserDTO.js';
 import User from '../../../class/User.js';
@@ -9,10 +9,14 @@ import "./login.css";
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { setCurrentUser, currentUser } = useData();
 
-    const [isRegister, setIsRegister] = useState(false);  
+    // Reading where the user was trying to go before being sent to login
+    const redirectTo = location.state?.redirectTo || '/shop';
+    const redirectCakeId = location.state?.cakeId || null;
 
+    const [isRegister, setIsRegister] = useState(false);  
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,12 +30,6 @@ const LoginPage = () => {
     const [serverError, setServerError] = useState('');
 
     const firstFieldRef = useRef(null);
-    
-    useEffect(() => {
-        if (currentUser) {
-            navigate('/');
-        }
-    }, [currentUser]);
 
     useEffect(() => {
         firstFieldRef.current?.focus();
@@ -91,7 +89,10 @@ const LoginPage = () => {
                 const data = await response.json();
                 const user = new User(data.id, data.name, data.email);
                 setCurrentUser(user);
-                navigate('/shop');
+                // Navigating back to original destination with cakeId if present
+                navigate(redirectTo, {
+                    state: redirectCakeId ? { cakeId: redirectCakeId } : undefined
+                });
             }
         } catch (error) {
             setServerError(error.message);
