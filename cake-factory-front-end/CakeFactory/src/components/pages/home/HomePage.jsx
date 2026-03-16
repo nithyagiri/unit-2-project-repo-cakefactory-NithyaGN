@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import HomeImage from '../../../images/Home.jpeg';
 import { useData } from '../../../context/DataContext';
