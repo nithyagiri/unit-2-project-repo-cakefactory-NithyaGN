@@ -13,17 +13,20 @@ const ShopPage = () => {
   const [maxPrice, setMaxPrice] = useState("");
 
   const handleSelectCake = (cake) => {
-    navigate("/order", { state: { cakeId: cake.id } });
+  // Saving destination and cakeId so Login can redirect back after login
+      navigate('/login', {
+        state: { redirectTo: '/order', cakeId: cake.id }
+      });
   };
 
-  // Derive unique categories from allCakes
+  // Deriving unique categories from allCakes
   const categories = useMemo(() => {
     if (!allCakes) return ["All"];
     const cats = allCakes.map((c) => c.category).filter(Boolean);
     return ["All", ...new Set(cats)];
   }, [allCakes]);
 
-  // Derive price bounds for placeholder hints
+  // Deriving price bounds for placeholder values in price filter inputs
   const { lowestPrice, highestPrice } = useMemo(() => {
     if (!allCakes || !allCakes.length) return { lowestPrice: 0, highestPrice: 0 };
     const prices = allCakes.map((c) => Number(c.price)).filter((p) => !isNaN(p));
