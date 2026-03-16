@@ -10,7 +10,7 @@ const OrderPage = () => {
   const navigate = useNavigate();
   const location= useLocation();
   const { allCakes, isLoading } = useData();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(location.state?.existingData?.quantity || 1);
 
   // Get cakeId passed via navigation state
   const cakeId = location.state?.cakeId;
