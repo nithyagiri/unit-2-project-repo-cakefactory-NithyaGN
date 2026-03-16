@@ -111,8 +111,6 @@ export const DataContextProvider = ({ children }) => {
                 const errorText = await response.text();
                 throw new Error(errorText || 'Failed to checkout');
             }
-
-            // Refresh the cart to update the grand total and items list to 0
             setCartItems([]);
             setGrandTotal(0);
             
@@ -127,7 +125,6 @@ export const DataContextProvider = ({ children }) => {
         fetchCakes();
     }, []);
     
-
     // Fetch cart whenever the logged-in user changes
     useEffect(() => {
     if (currentUser?.id) {

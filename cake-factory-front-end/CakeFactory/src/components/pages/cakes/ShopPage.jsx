@@ -13,49 +13,49 @@ const ShopPage = () => {
   const [maxPrice, setMaxPrice] = useState("");
 
   const handleSelectCake = (cake) => {
-    if (!currentUser) {
-    // If NOT logged in, go to login and save intended destination
-    navigate('/login', {
-      state: { redirectTo: '/order', cakeId: cake.id }
-    });
-    } else {
-    // If ALREADY logged in, go straight to order
-    navigate('/order', { state: { cakeId: cake.id } });
-    }
+        if (!currentUser) {
+        // If NOT logged in, go to login and save intended destination
+           navigate('/login', {
+            state: { redirectTo: '/order', cakeId: cake.id }
+        });
+        } else {
+            // If ALREADY logged in, go straight to order
+            navigate('/order', { state: { cakeId: cake.id } });
+        }
   };
 
   // Deriving unique categories from allCakes
   const categories = useMemo(() => {
-    if (!allCakes) return ["All"];
-    const cats = allCakes.map((c) => c.category).filter(Boolean);
-    return ["All", ...new Set(cats)];
+        if (!allCakes) return ["All"];
+        const cats = allCakes.map((c) => c.category).filter(Boolean);
+        return ["All", ...new Set(cats)];
   }, [allCakes]);
 
   // Deriving price bounds for placeholder values in price filter inputs
   const { lowestPrice, highestPrice } = useMemo(() => {
-    if (!allCakes || !allCakes.length) return { lowestPrice: 0, highestPrice: 0 };
-    const prices = allCakes.map((c) => Number(c.price)).filter((p) => !isNaN(p));
-    return { lowestPrice: Math.min(...prices), highestPrice: Math.max(...prices) };
+        if (!allCakes || !allCakes.length) return { lowestPrice: 0, highestPrice: 0 };
+        const prices = allCakes.map((c) => Number(c.price)).filter((p) => !isNaN(p));
+        return { lowestPrice: Math.min(...prices), highestPrice: Math.max(...prices) };
   }, [allCakes]);
 
   // Filter cakes by category + price range
   const filteredCakes = useMemo(() => {
-    if (!allCakes) return [];
-    return allCakes.filter((cake) => {
-      const matchesCategory = activeCategory === "All" || cake.category === activeCategory;
-      const price = Number(cake.price);
-      const matchesMin = minPrice === "" || price >= Number(minPrice);
-      const matchesMax = maxPrice === "" || price <= Number(maxPrice);
-      return matchesCategory && matchesMin && matchesMax;
-    });
+        if (!allCakes) return [];
+        return allCakes.filter((cake) => {
+            const matchesCategory = activeCategory === "All" || cake.category === activeCategory;
+            const price = Number(cake.price);
+            const matchesMin = minPrice === "" || price >= Number(minPrice);
+            const matchesMax = maxPrice === "" || price <= Number(maxPrice);
+            return matchesCategory && matchesMin && matchesMax;
+        });
   }, [allCakes, activeCategory, minPrice, maxPrice]);
 
   const hasActiveFilters = activeCategory !== "All" || minPrice !== "" || maxPrice !== "";
 
   const clearFilters = () => {
-    setActiveCategory("All");
-    setMinPrice("");
-    setMaxPrice("");
+        setActiveCategory("All");
+        setMinPrice("");
+        setMaxPrice("");
   };
 
   if (isLoading) {

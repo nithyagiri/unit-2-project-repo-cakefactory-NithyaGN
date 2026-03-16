@@ -27,9 +27,15 @@ export default class Cart {
         this.status = status;
     }
 
-    isInCart() { return this.status === "IN_CART"; }
-    isConfirmed() { return this.status === "CONFIRMED"; }
-    isCancelled() { return this.status === "CANCELLED"; }
+    isInCart() { 
+        return this.status === "IN_CART"; 
+    }
+    isConfirmed() {
+         return this.status === "CONFIRMED"; 
+        }
+    isCancelled() { 
+        return this.status === "CANCELLED"; 
+    }
     getFormattedPrice() {
         if (this.price == null || this.price === undefined) return "$0.00";
         return `$${Number(this.price).toFixed(2)}`;

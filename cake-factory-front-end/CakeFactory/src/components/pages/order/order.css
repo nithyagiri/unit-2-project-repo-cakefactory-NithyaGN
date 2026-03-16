@@ -18,7 +18,7 @@
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   max-width: 1100px;
   width: 100%; /* ensures it shrinks on smaller screens */
-  margin: 0 auto; /* extra safety for centering */
+  margin: 0 auto; 
 }
 .card{
     display:inline-block;

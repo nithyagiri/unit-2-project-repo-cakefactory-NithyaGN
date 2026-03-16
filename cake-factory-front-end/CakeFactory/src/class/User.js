@@ -4,8 +4,6 @@ export default class User {
         this.name = name;
         this.email = email;
     }
-
-    
     getDisplayName() {
         return this.name;
     }
