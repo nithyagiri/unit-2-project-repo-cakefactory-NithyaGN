@@ -11,7 +11,6 @@ import org.launchcode.cake_factory_back_end.repositories.CartRepository;
 import org.launchcode.cake_factory_back_end.repositories.UserRepository;
 import org.launchcode.cake_factory_back_end.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,33 +55,26 @@ public class CartController {
 
     // GET all cart items by user
     @GetMapping(value = "/user/{userId}")
-    public ResponseEntity<?> getCartByUser(@PathVariable Long userId) throws NoResourceFoundException {
+    public ResponseEntity<?> getCartByUser(@PathVariable Long userId) {
         List<Cart> cartItems = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.IN_CART);
 
         //calculate the grand Total for all items in the cart
         double grandTotal = cartItems.stream().mapToDouble(Cart::getPrice).sum();
 
-        if (cartItems.isEmpty()) {
-            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId,"No items found in cart");
-        }else {
             List<CartDTO> dtoList = cartItems.stream().map(this::convertToDTO).collect(Collectors.toList());
             Map<String, Object> response = new HashMap<>();
             response.put("cartItems", dtoList);
             response.put("grandTotal", grandTotal);
             return new ResponseEntity<>(response, HttpStatus.OK);
-        }
     }
 
     // GET all confirmed orders by user
     @GetMapping(value = "/user/{userId}/orders")
-    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) throws NoResourceFoundException {
+    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) {
         List<Cart> orders = cartRepository.findByUser_IdAndStatus(userId, Cart.Status.CONFIRMED);
-        if (orders.isEmpty()) {
-            throw new NoResourceFoundException(HttpMethod.GET, "/api/cart/user/" + userId + "/orders", "No orders found");
-        } else {
+
             List<CartDTO> orderDTOs = orders.stream().map(this::convertToDTO).collect(Collectors.toList());
             return new ResponseEntity<>(orderDTOs, HttpStatus.OK);
-        }
     }
 
     // Add Cart Item - POST /api/cart/add

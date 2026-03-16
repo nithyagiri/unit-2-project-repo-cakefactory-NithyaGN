@@ -88,11 +88,11 @@ const LoginPage = () => {
             } else {
                 const data = await response.json();
                 const user = new User(data.id, data.name, data.email);
+                setCurrentUser(user);
                 // Navigating back to original destination with cakeId if present
                 navigate(redirectTo, {
                     state: redirectCakeId ? { cakeId: redirectCakeId } : undefined
                 });
-                setCurrentUser(user);
             }
         } catch (error) {
             setServerError(error.message);

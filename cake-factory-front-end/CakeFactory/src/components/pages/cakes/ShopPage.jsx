@@ -6,17 +6,22 @@ import "./shop.css";
 
 const ShopPage = () => {
   const navigate = useNavigate();
-  const { allCakes, isLoading } = useData();
+  const { allCakes, isLoading, currentUser } = useData();
 
   const [activeCategory, setActiveCategory] = useState("All");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
   const handleSelectCake = (cake) => {
-  // Saving destination and cakeId so Login can redirect back after login
-      navigate('/login', {
-        state: { redirectTo: '/order', cakeId: cake.id }
-      });
+    if (!currentUser) {
+    // If NOT logged in, go to login and save intended destination
+    navigate('/login', {
+      state: { redirectTo: '/order', cakeId: cake.id }
+    });
+    } else {
+    // If ALREADY logged in, go straight to order
+    navigate('/order', { state: { cakeId: cake.id } });
+    }
   };
 
   // Deriving unique categories from allCakes
