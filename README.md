@@ -25,6 +25,7 @@
   <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white" alt="Maven" />
   <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge" alt="Java" />
+   <img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white" alt="Hibernate" />
   <img src="https://img.shields.io/badge/MySQL-00758F?style=for-the-badge" alt="MySQL" />
 </div>
 
@@ -213,9 +214,9 @@ This full-stack project uses a modern, decoupled MVC architecture.
 
 The project uses a MySQL database with the following core entities managed via Hibernate:
 
-1. **Cake** ↔️ **Category**: Many-to-Many
-2. **Order** ↔️ **Cake**: Many-to-Many (via OrderItem)
-3. **Order** ↔️ **Customer**: Many-to-One
+1. **Cake** ↔️ **Cart**: one-to-Many
+2. **User** ↔️ **Cart**: one-to-Many
+3. **Cart** ↔️ **Cake**: Many-to-One
 
 ### Entity Relationship Diagram (ERD)
 
